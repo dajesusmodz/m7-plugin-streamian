@@ -50,14 +50,36 @@ exports.start = function (page) {
             if (itemmd.type === 'episode') {
                 coverArt = fetchCoverArt(itemmd.title, 'episode');
                 if (service.autoPlay) {
-                    var episodeurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title)
+                    var episodeurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
                 } else {
-                    var episodeurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title)
+                    var episodeurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
                 }
-                page.appendItem(episodeurl, "video", {
+                item = page.appendItem(episodeurl, "video", {
                     title: decodeURIComponent(itemmd.title),
                     icon: coverArt,
                 });
+                var type = "episode";
+                var title = itemmd.title;
+                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
+                    return function() {
+                        var list = JSON.parse(library.list);
+                        if (title) {
+                            var decodedTitle = decodeURIComponent(title);
+                            var initialLength = list.length;
+                            list = list.filter(function(fav) {
+                                return fav.title !== encodeURIComponent(decodedTitle);
+                            });
+                            if (list.length < initialLength) {
+                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                            } else {
+                                popup.notify('Content not found in Your Library.', 3);
+                            }
+                            library.list = JSON.stringify(list);
+                        } else {
+                        popup.notify('Content not found in Your Library.', 3);
+                        }
+                    };
+                })(title));
             } else if (itemmd.type === 'movie') {
                 coverArt = fetchCoverArt(itemmd.title, 'movie');
                 console.log("[DEBUG]: Movie Cover Art for " + itemmd.title + ": " + coverArt);
@@ -66,21 +88,65 @@ exports.start = function (page) {
                 var year = titleParts.pop();
                 var movieTitle = titleParts.join(' ');
                 if (service.autoPlay) {
-                    var movieurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title)
+                    var movieurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
                 } else {
-                    var movieurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title)
+                    var movieurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
                 }
-                page.appendItem(movieurl, "video", {
+                item = page.appendItem(movieurl, "video", {
                     title: movieTitle + " (" + year + ")",
                     icon: coverArt,
                 });
+                var type = "movie";
+                var title = itemmd.title;
+                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
+                    return function() {
+                        var list = JSON.parse(library.list);
+                        if (title) {
+                            var decodedTitle = decodeURIComponent(title);
+                            var initialLength = list.length;
+                            list = list.filter(function(fav) {
+                                return fav.title !== encodeURIComponent(decodedTitle);
+                            });
+                            if (list.length < initialLength) {
+                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                            } else {
+                                popup.notify('Content not found in Your Library.', 3);
+                            }
+                            library.list = JSON.stringify(list);
+                        } else {
+                        popup.notify('Content not found in Your Library.', 3);
+                        }
+                    };
+                })(title));
             } else if (itemmd.type === 'show') {
                 coverArt = fetchCoverArt(itemmd.title, 'show');
                 console.log("[DEBUG]: Show Cover Art for " + decodeURIComponent(itemmd.title) + ": " + coverArt);
-                page.appendItem(plugin.id + ":season:" + itemmd.title, "video", {
+                item = page.appendItem(plugin.id + ":season:" + itemmd.title, "video", {
                     title: decodeURIComponent(itemmd.title),
                     icon: coverArt,
                 });
+                var type = "show";
+                var title = itemmd.title;
+                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
+                    return function() {
+                        var list = JSON.parse(library.list);
+                        if (title) {
+                            var decodedTitle = decodeURIComponent(title);
+                            var initialLength = list.length;
+                            list = list.filter(function(fav) {
+                                return fav.title !== encodeURIComponent(decodedTitle);
+                            });
+                            if (list.length < initialLength) {
+                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                            } else {
+                                popup.notify('Content not found in Your Library.', 3);
+                            }
+                            library.list = JSON.stringify(list);
+                        } else {
+                        popup.notify('Content not found in Your Library.', 3);
+                        }
+                    };
+                })(title));
             }
             pos++;
         }
@@ -184,10 +250,15 @@ exports.start = function (page) {
             var title = item.title;
             var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "cvrntfnd.png";
             var releaseDate = item.release_date ? item.release_date.substring(0, 4) : "";
+            var movieDetailsUrl = "https://api.themoviedb.org/3/movie/" + item.id + "?api_key=a0d71cffe2d6693d462af9e4f336bc06" + "&append_to_response=external_ids";
+            var movieDetailsResponse = http.request(movieDetailsUrl);
+            var movieDetails = JSON.parse(movieDetailsResponse);
+            var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
+            var movieurl;
             if (service.autoPlay) {
-                var movieurl = plugin.id + ":play:" + decodeURIComponent(title + " " + releaseDate)
+                movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
             } else {
-                var movieurl = plugin.id + ":details:" + decodeURIComponent(title + " " + releaseDate)
+                movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
             }
             var item = page.appendItem(movieurl, "video", {
                 title: title + (releaseDate ? " (" + releaseDate + ")" : ""),
@@ -195,42 +266,43 @@ exports.start = function (page) {
             });
             var type = "movie";
             var title = title + " " + releaseDate;
-                item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type) {
-                    return function() {
-                        var list = JSON.parse(library.list);
-                        if (isFavorite(title)) {
-                            popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
+            item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type, imdbid) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (isFavorite(title)) {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
+                    } else {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
+                        var libraryItem = {
+                            title: encodeURIComponent(title),
+                            type: type,
+                            imdbid: imdbid
+                        };
+                        list.push(libraryItem);
+                        library.list = JSON.stringify(list);
+                    }
+                };
+            })(title, type, imdbid));
+            item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (title) {
+                        var decodedTitle = decodeURIComponent(title);
+                        var initialLength = list.length;
+                        list = list.filter(function(fav) {
+                            return fav.title !== encodeURIComponent(decodedTitle);
+                        });
+                        if (list.length < initialLength) {
+                            popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
                         } else {
-                            popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
-                            var libraryItem = {
-                                title: encodeURIComponent(title),
-                                type: type
-                            };
-                            list.push(libraryItem);
-                            library.list = JSON.stringify(list);
+                            popup.notify('Content not found in Your Library.', 3);
                         }
-                    };
-                })(title, type));
-                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title, type) {
-                    return function() {
-                        var list = JSON.parse(library.list);
-                        if (title) {
-                            var decodedTitle = decodeURIComponent(title);
-                            var initialLength = list.length;
-                            list = list.filter(function(fav) {
-                                return fav.title !== encodeURIComponent(decodedTitle);
-                            });
-                            if (list.length < initialLength) {
-                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
-                            } else {
-                                popup.notify('Content not found in Your Library.', 3);
-                            }
-                            library.list = JSON.stringify(list);
-                        } else {
-                        popup.notify('Content not found in Your Library.', 3);
-                        }
-                    };
-                })(title, type));
+                        library.list = JSON.stringify(list);
+                    } else {
+                    popup.notify('Content not found in Your Library.', 3);
+                    }
+                };
+            })(title));
         });
     }
     page.appendItem(plugin.id + ":trendingmovies", "video", {
@@ -277,9 +349,9 @@ exports.library = function (page) {
         if (itemmd.type === 'episode') {
             coverArt = fetchCoverArt(itemmd.title, 'episode');
             if (service.autoPlay) {
-                var episodeurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title)
+                var episodeurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
             } else {
-                var episodeurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title)
+                var episodeurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
             }
             var item = page.appendItem(episodeurl, "video", {
                 title: decodeURIComponent(itemmd.title),
@@ -315,9 +387,9 @@ exports.library = function (page) {
             var year = titleParts.pop(); // Remove the year from the title
             var movieTitle = titleParts.join(' ');
             if (service.autoPlay) {
-                var movieurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title)
+                var movieurl = plugin.id + ":play:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
             } else {
-                var movieurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title)
+                var movieurl = plugin.id + ":details:" + decodeURIComponent(itemmd.title) + ":" + itemmd.imdbid;
             }
             var item = page.appendItem(movieurl, "video", {
                 title: movieTitle + " (" + year + ")", // Display the title with the year in brackets
@@ -325,7 +397,7 @@ exports.library = function (page) {
             });
             var title = movieTitle + " " + year;
             var type = "movie";
-            item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title, type) {
+            item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
                 return function() {
                     var list = JSON.parse(library.list);
                     if (title) {
@@ -344,7 +416,7 @@ exports.library = function (page) {
                     popup.notify('Content not found in Your Library.', 3);
                     }
                 };
-            })(title, type));
+            })(title));
         } else if (itemmd.type === 'show') {
             coverArt = fetchCoverArt(itemmd.title, 'show');
             console.log("[DEBUG]: Show Cover Art for " + decodeURIComponent(itemmd.title) + ": " + coverArt);
@@ -426,10 +498,59 @@ exports.trendingmovies = function (page) {
             var title = item.title;
             var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "cvrntfnd.png";
             var releaseDate = item.release_date ? item.release_date.substring(0, 4) : "";
-            page.appendItem(plugin.id + ":details:" + decodeURIComponent(title + " " + releaseDate), "video", {
+            var movieDetailsUrl = "https://api.themoviedb.org/3/movie/" + item.id + "?api_key=a0d71cffe2d6693d462af9e4f336bc06" + "&append_to_response=external_ids";
+            var movieDetailsResponse = http.request(movieDetailsUrl);
+            var movieDetails = JSON.parse(movieDetailsResponse);
+            var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
+            var movieurl;
+            if (service.autoPlay) {
+                movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
+            } else {
+                movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
+            }
+            var item = page.appendItem(movieurl, "video", {
                 title: title + (releaseDate ? " (" + releaseDate + ")" : ""),
                 icon: posterPath
             });
+            var type = "movie";
+            var title = title + " " + releaseDate;
+            item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type, imdbid) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (isFavorite(title)) {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
+                    } else {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
+                        var libraryItem = {
+                            title: encodeURIComponent(title),
+                            type: type,
+                            imdbid: imdbid
+                        };
+                        list.push(libraryItem);
+                        library.list = JSON.stringify(list);
+                    }
+                };
+            })(title, type, imdbid));
+            item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (title) {
+                        var decodedTitle = decodeURIComponent(title);
+                        var initialLength = list.length;
+                        list = list.filter(function(fav) {
+                            return fav.title !== encodeURIComponent(decodedTitle);
+                        });
+                        if (list.length < initialLength) {
+                            popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                        } else {
+                            popup.notify('Content not found in Your Library.', 3);
+                        }
+                        library.list = JSON.stringify(list);
+                    } else {
+                    popup.notify('Content not found in Your Library.', 3);
+                    }
+                };
+            })(title));
         });
     }
 };

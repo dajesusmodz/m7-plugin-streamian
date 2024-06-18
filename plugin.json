@@ -1,10 +1,10 @@
 {
-	"description": "<p>Changelog (05/06/24):<p>* Day One Release",
+	"description": "<p>Changelog (18/06/24):<p>* Now Supports Official Subtitle Addons via IMDB ID (Opensubtitles Compatible).<p>* Fixed Trending Movies not Auto-Playing.<p>* Fixed Unable to Remove from 'Your Library' from Home Screen.",
 	"author": "F0R3V3R50F7",
 	"homepage": "http://github.com/lprot/movian-plugin-streamian",
 	"title": "Streamian",
-	"synopsis": "One stop for TV Shows and Movies with additional functionality. | Scrapes: 1337x & YTS - More Coming Soon!",
-	"version": "1.0",
+	"synopsis": "Everything in one plugin.",
+	"version": "1.2",
         "file": "streamian.js",
 	"m7Version": "7.0.0",
 	"type": "ecmascript",

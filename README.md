@@ -12,6 +12,7 @@
 * Filter Out H.265 Videos! (For Playstation 3)
 * Automatically Grabs the Best Link! - Adjust Search Time in Settings.
 * Automatically Pick Your Preferred Video Quality!
+* Use Together with Official Movian/M7 Subtitles Addons!
 
 
 **How to Install (Official Plugin Repository):**
