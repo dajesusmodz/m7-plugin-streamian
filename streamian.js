@@ -15,6 +15,7 @@ var plugin = JSON.parse(Plugin.manifest);
 var logo = Plugin.path + plugin.icon;
 var yts = require('addons/ytsaddon');
 var ottsx = require('addons/ottsxaddon');
+var internetarchive = require('addons/internetarchiveaddon');
 var start = require('start');
 var library = store.create('library');
 if (!library.list) {
@@ -26,10 +27,7 @@ if (!library.list) {
 
 
 service.create(plugin.title, plugin.id + ":start", 'video', true, logo);
-
-
 settings.globalSettings(plugin.id, plugin.title, logo, plugin.synopsis);
-
 settings.createBool('h265filter', 'Enable H.265 Filter (Enable on Playstation 3)', false, function(v) {
     service.H265Filter = v;
 });
@@ -37,13 +35,13 @@ settings.createBool('autoPlay', 'Enable Auto-Play', true, function(v) {
     service.autoPlay = v;
 });
 settings.createMultiOpt('selectQuality', 'Preferred Quality', [
-    ['2160p', 'Highest'],
-    ['1080p', '1080p', true],
-    ['720p', '720p'],
+    ['UltraHD', 'Ultra HD | 4k'],
+    ['FullHD', 'Full HD | 1080p', true],
+    ['HD', 'HD | 720p'],
   ], function(v) {
   service.selectQuality = v;
 });
-settings.createMultiOpt('searchTime', 'Torrent Search Time', [
+settings.createMultiOpt('searchTime', 'Minimum Video Source Search Time', [
     ['30', '30 Seconds'],
     ['20', '20 Seconds'],
     ['10', '10 Seconds'],
@@ -64,7 +62,6 @@ function isFavorite(title) {
       return fav.identifier === title;
     });
 }
-
 function addToLibrary(title, type, imdbid) {
     var list = JSON.parse(library.list);
     if (isFavorite(title)) {
@@ -80,7 +77,6 @@ function addToLibrary(title, type, imdbid) {
       library.list = JSON.stringify(list);
     }
 }
-
 function removeFromLibrary(title) {
     var list = JSON.parse(library.list);
     if (title) {
@@ -99,61 +95,87 @@ function removeFromLibrary(title) {
       popup.notify('Video not found in favorites.', 3);
     }
 }
-
 function consultAddons(page, title, imdbid) {
     page.model.contents = 'list';
     var ytsResults = yts.search(page, title) || [];
     var ottsxResults = ottsx.search(page, title) || [];
-    var combinedResults = ottsxResults.concat(ytsResults);
-
-    // Function to process results
+    var internetArchiveResults = internetarchive.search(page, title) || [];
+    ytsResults = ytsResults.map(function(result) {
+        return result + " - yts";
+    });
+    ottsxResults = ottsxResults.map(function(result) {
+        return result + " - ottsx";
+    });
+    internetArchiveResults = internetArchiveResults.map(function(result) {
+        return result + " - internetarchive";
+    });
+    var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults);
     function processResults() {
-        // Filter results based on selected quality
-        var filteredResults = combinedResults.filter(function (item) {
+        var filteredResults = combinedResults.filter(function(item) {
             var parts = item.split(" - ");
             var videoQuality = parts[1];
 
-            if (service.selectQuality == "1080p" && (!/720p/i.test(videoQuality) && !/2160p/i.test(videoQuality))) {
+            if (service.selectQuality == "UltraHD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality) && !/Unknown/i.test(videoQuality))) {
                 return true;
             }
-            if (service.selectQuality == "720p" && (!/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality))) {
+            if (service.selectQuality == "FullHD" && (!/720p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/Unknown/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
+                return true;
+            }
+            if (service.selectQuality == "HD" && (!/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality) && !/Unknown/i.test(videoQuality))) {
+                return true;
+            }
+            if (/Unknown/i.test(videoQuality)) {
                 return true;
             }
             return false;
         });
-
         console.log("IMDb ID for " + title + ":", imdbid);
-
         if (filteredResults.length > 0) {
-            var highestSeedersItem = filteredResults.reduce(function (prev, current) {
+            var highestSeedersItem = filteredResults.reduce(function(prev, current) {
                 var prevSeeders = parseInt(prev.split(" - ")[2]) || 0;
                 var currentSeeders = parseInt(current.split(" - ")[2]) || 0;
                 return (currentSeeders > prevSeeders) ? current : prev;
             });
-
             var parts = highestSeedersItem.split(" - ");
             var magnetLink = parts[0];
             var videoQuality = parts[1];
             var seederCount = parts[2];
-            var vparams = "videoparams:" + JSON.stringify({
-                title: title,
-                canonicalUrl: "torrent://" + magnetLink,
-                no_fs_scan: true,
-                sources: [{
-                    url: "torrent:video:" + magnetLink
-                }],
-                imdbid: imdbid
-            });
-
+            var source = parts[3];
+            var vparams;
+            if (/Unknown/i.test(videoQuality)) {
+                popup.notify('Streamian | Internet Archive: Could not determine video quality', 5);
+            }
+            if (source === 'internetarchive') {
+                vparams = "videoparams:" + JSON.stringify({
+                    title: title,
+                    canonicalUrl: magnetLink,
+                    no_fs_scan: true,
+                    sources: [{
+                        url: magnetLink
+                    }],
+                    imdbid: imdbid
+                });
+            } else {
+                vparams = "videoparams:" + JSON.stringify({
+                    title: title,
+                    canonicalUrl: "torrent://" + magnetLink,
+                    no_fs_scan: true,
+                    sources: [{
+                        url: "torrent:video:" + magnetLink
+                    }],
+                    imdbid: imdbid
+                });
+            }
             page.redirect(vparams);
         } else {
-            page.appendItem("", "separator", { title: "No suitable streams found for " + title });
+            var nostreamnotify = "No suitable streams found for " + title
+            setPageHeader(page, nostreamnotify);
+            page.loading = false;
         }
     }
     var searchTime = parseInt(service.searchTime) * 1000;
     setTimeout(processResults, searchTime);
 }
-
 function setPageHeader(page, title) {
     if (page.metadata) {
         page.metadata.title = title;
@@ -165,7 +187,6 @@ function setPageHeader(page, title) {
     page.entries = 0;
     page.loading = true;
 }
-
 function searchOnTmdb(page, query) {
     page.model.contents = 'grid';
     setPageHeader(page, query);
@@ -174,7 +195,6 @@ function searchOnTmdb(page, query) {
     var response = http.request(apiUrl);
     var json = JSON.parse(response);
     var fallbackImage = Plugin.path + "cvrntfnd.png";
-
     if (json.results && json.results.length > 0) {
         var movies = [];
         var tvShows = [];
@@ -185,7 +205,6 @@ function searchOnTmdb(page, query) {
                 tvShows.push(item);
             }
         });
-
         if (movies.length > 0) {
             page.appendItem("", "separator", { title: "Movies" });
             page.appendItem("", "separator", { title: "" });
@@ -194,25 +213,21 @@ function searchOnTmdb(page, query) {
                 var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : fallbackImage;
                 var releaseDate = item.release_date ? item.release_date.substring(0, 4) : '';
                 title = title + " " + releaseDate;
-
                 // Fetch movie details to get the IMDb ID
                 var movieDetailsUrl = "https://api.themoviedb.org/3/movie/" + item.id + "?api_key=" + apiKey + "&append_to_response=external_ids";
                 var movieDetailsResponse = http.request(movieDetailsUrl);
                 var movieDetails = JSON.parse(movieDetailsResponse);
                 var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
-
                 var movieurl;
                 if (service.autoPlay) {
                     movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
                 } else {
                     movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
                 }
-
                 var item = page.appendItem(movieurl, "video", {
                     title: title,
                     icon: posterPath
                 });
-
                 var type = "movie";
                 item.addOptAction('Add \'' + title + '\' to Your Library', (function(title, type, imdbid) {
                     return function() {
@@ -226,7 +241,6 @@ function searchOnTmdb(page, query) {
                 })(title));
             });
         }
-
         if (tvShows.length > 0) {
             page.appendItem("", "separator", { title: "TV Shows" });
             page.appendItem("", "separator", { title: "" });
@@ -273,8 +287,8 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
-    popup.notify('Raise Your Torrent Cache if You Can! #SeedAsYouStream', 5);
-    popup.notify('We now use the Item-Menu for adding to favorites!', 5);
+    popup.notify('Streamian | Raise Your Torrent Cache if You Can! #SeedAsYouStream', 5);
+    popup.notify('Streamian | We now use the Item-Menu for adding to favorites!', 5);
     start.start(page);
     page.loading = false;
 });
@@ -330,37 +344,30 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
     var episodesResponse = http.request(episodesUrl);
     var episodesJson = JSON.parse(episodesResponse);
     if (episodesJson.episodes && episodesJson.episodes.length > 0) {
-        // Fetch the TV show details to get the show name
         var showDetailsUrl = "https://api.themoviedb.org/3/tv/" + showId + "?api_key=" + apiKey;
         var showDetailsResponse = http.request(showDetailsUrl);
         var showDetailsJson = JSON.parse(showDetailsResponse);
         var showTitle = showDetailsJson.name ? showDetailsJson.name : "Unknown Show";
-
         episodesJson.episodes.forEach(function (episode) {
             var episodeTitle = episode.name;
             var episodeNumber = episode.episode_number < 10 ? "0" + episode.episode_number : episode.episode_number;
             var cleanedSeasonNumber = seasonNumber < 10 ? "0" + seasonNumber : seasonNumber;
             var title = showTitle + " S" + cleanedSeasonNumber + "E" + episodeNumber;
             var posterPath = episode.still_path ? "https://image.tmdb.org/t/p/w500" + episode.still_path : Plugin.path + "scrnshtntfnd.png";
-
-            // Fetch IMDb ID for the episode
             var episodeDetailsUrl = "https://api.themoviedb.org/3/tv/" + showId + "/season/" + seasonNumber + "/episode/" + episode.episode_number + "?api_key=" + apiKey + "&append_to_response=external_ids";
             var episodeDetailsResponse = http.request(episodeDetailsUrl);
             var episodeDetails = JSON.parse(episodeDetailsResponse);
             var imdbid = episodeDetails.external_ids ? episodeDetails.external_ids.imdb_id : '';
-
             var episodeurl;
             if (service.autoPlay) {
                 episodeurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
             } else {
                 episodeurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
             }
-
             var item = page.appendItem(episodeurl, "video", {
                 title: episodeNumber + "). " + episodeTitle,
                 icon: posterPath,
             });
-
             var type = "episode";
             item.addOptAction('Add \'' + title + '\' to Your Library', (function(title, type, imdbid) {
                 return function() {
@@ -379,7 +386,6 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
                     }
                 };
             })(title, type, imdbid));
-            
             item.addOptAction('Remove \'' + title + '\' from My Favorites', (function(title, type) {
                 return function() {
                     var list = JSON.parse(library.list);
@@ -411,7 +417,7 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
         var countdown = 3;
         setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
         page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
-            title: "Cancel",
+            title: "About " + decodeURIComponent(title),
             icon: Plugin.path + "cancel.png",
         });
         var timer = setInterval(function() {
@@ -431,7 +437,6 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
 new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'list';
-
     page.appendItem(plugin.id + ":play:" + title + ":" + imdbid, "video", {
         title: "Play",
         icon: Plugin.path + "play.png",
