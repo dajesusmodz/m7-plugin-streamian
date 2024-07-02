@@ -251,6 +251,43 @@ function searchOnTmdb(page, query) {
                     title: (title),
                     icon: posterPath,
                 });
+                var type = "show";
+                item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type) {
+                    return function() {
+                        var list = JSON.parse(library.list);
+                        if (isFavorite(title)) {
+                            popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
+                        } else {
+                            popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
+                            var libraryItem = {
+                                title: encodeURIComponent(title),
+                                type: type
+                            };
+                            list.push(libraryItem);
+                            library.list = JSON.stringify(list);
+                        }
+                    };
+                })(title, type));
+                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title, type) {
+                    return function() {
+                        var list = JSON.parse(library.list);
+                        if (title) {
+                            var decodedTitle = decodeURIComponent(title);
+                            var initialLength = list.length;
+                            list = list.filter(function(fav) {
+                                return fav.title !== encodeURIComponent(decodedTitle);
+                            });
+                            if (list.length < initialLength) {
+                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                            } else {
+                                popup.notify('Content not found in Your Library.', 3);
+                            }
+                            library.list = JSON.stringify(list);
+                        } else {
+                        popup.notify('Content not found in Your Library.', 3);
+                        }
+                    };
+                })(title, type));
                 item.richMetadata = {
                     channel: "Channel Name",
                 };
@@ -303,8 +340,6 @@ new page.Route(plugin.id + ":season:(.*)", function(page, title) {
     var searchResponse = http.request(searchUrl);
     var searchJson = JSON.parse(searchResponse);
     var type = "show";
-    page.options.createAction('addToLibrary', 'Save this Show to Your Library', function() {addToLibrary(title, type);});
-    page.options.createAction('removeFromLibrary', 'Remove this Show from Your Library', function() {removeFromLibrary(title, type);});
     if (searchJson.results && searchJson.results.length > 0) {
         var show = searchJson.results[0];
         console.log('Show object:', show); // Log the show object to inspect its structure
@@ -417,7 +452,7 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
         var countdown = 3;
         setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
         page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
-            title: "About " + decodeURIComponent(title),
+            title: "Cancel",
             icon: Plugin.path + "cancel.png",
         });
         var timer = setInterval(function() {

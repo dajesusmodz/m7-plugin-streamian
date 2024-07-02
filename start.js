@@ -470,10 +470,48 @@ exports.trendingshows = function (page) {
         trendingShows.slice(0, 999999).forEach(function(item) {
             var title = item.name;
             var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "cvrntfnd.png";
-            page.appendItem(plugin.id + ":season:" + decodeURIComponent(title), "video", {
+            var item = page.appendItem(plugin.id + ":season:" + decodeURIComponent(title), "video", {
                 title: title,
                 icon: posterPath
             });
+            var type = "show";
+            var title = title;
+            item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (isFavorite(title)) {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
+                    } else {
+                        popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
+                        var libraryItem = {
+                            title: encodeURIComponent(title),
+                            type: type
+                        };
+                        list.push(libraryItem);
+                        library.list = JSON.stringify(list);
+                    }
+                };
+            })(title, type));
+            item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title, type) {
+                return function() {
+                    var list = JSON.parse(library.list);
+                    if (title) {
+                        var decodedTitle = decodeURIComponent(title);
+                        var initialLength = list.length;
+                        list = list.filter(function(fav) {
+                            return fav.title !== encodeURIComponent(decodedTitle);
+                        });
+                        if (list.length < initialLength) {
+                            popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
+                        } else {
+                            popup.notify('Content not found in Your Library.', 3);
+                        }
+                        library.list = JSON.stringify(list);
+                    } else {
+                    popup.notify('Content not found in Your Library.', 3);
+                    }
+                };
+            })(title, type));
         });
     }
     
