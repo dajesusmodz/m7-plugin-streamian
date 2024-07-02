@@ -1,1 +1,78 @@
-var _0x48f5e1=_0x51bf;(function(_0x4e33d4,_0x1329a4){var _0xb4a24d=_0x51bf,_0x2d4b78=_0x4e33d4();while(!![]){try{var _0xc8c548=parseInt(_0xb4a24d(0x12f))/(0x713*0x1+-0x588+-0x2*0xc5)+-parseInt(_0xb4a24d(0x171))/(0xfce+0x1456+-0x2422)+-parseInt(_0xb4a24d(0x137))/(-0x1*-0x115d+0x1807+0x63*-0x6b)+-parseInt(_0xb4a24d(0x153))/(-0x1021+-0x369*-0x7+-0x1*0x7ba)*(-parseInt(_0xb4a24d(0x15b))/(0x13*-0x1d3+-0x18+0x22c6))+-parseInt(_0xb4a24d(0x164))/(0x1f0a+-0x5*-0x1c3+-0x27d3)+-parseInt(_0xb4a24d(0x139))/(0x16d1+0x1db0+-0x8bf*0x6)*(-parseInt(_0xb4a24d(0x177))/(-0x1ccf+0x15df+0x6f8))+parseInt(_0xb4a24d(0x15e))/(0x1*-0xa63+0x9*-0x279+-0x20ad*-0x1)*(-parseInt(_0xb4a24d(0x170))/(0xf24*-0x2+-0xbef+0x175*0x1d));if(_0xc8c548===_0x1329a4)break;else _0x2d4b78['push'](_0x2d4b78['shift']());}catch(_0x529ca5){_0x2d4b78['push'](_0x2d4b78['shift']());}}}(_0x2de5,0x8808c+-0x1079*0x47+0x58b9a));function _0x51bf(_0x15198a,_0x56e761){var _0x112d69=_0x2de5();return _0x51bf=function(_0x59b88c,_0x2e7c24){_0x59b88c=_0x59b88c-(-0xd7f+0x78d+0x1*0x71f);var _0x446acc=_0x112d69[_0x59b88c];return _0x446acc;},_0x51bf(_0x15198a,_0x56e761);}var html=require(_0x48f5e1(0x12d)+'l'),http=require(_0x48f5e1(0x15f)+'p');function _0x2de5(){var _0x2fe473=['pPNml','root','BEmFd','attributes','getElement','JmROD','MMUwO','37x.to/sor','tbody','getNamedIt','value','eksry','1080p','test','VPwJg','rrent\x20elem','gFIZT','push','trim','SbXcZ','textConten','href','32FVZRjJ','request','title','length','undefined','search','H265Filter','ge.','141485wqLmWt','t-search/','parse','27tdeClS','movian/htt','lement\x20fou','No\x20torrent','https://13','ent','1540008BcomIt','uVAJN','dVaPJ','KRvzG','/seeders/d','EIeGh','dWzOu','720p','match','No\x20tbody\x20e','37x.to','esc/1/','1525930uAaqje','485426AGhWGi','s\x20found\x20on','nd.','jxiuc','RixNp','\x20search\x20pa','1400952hrIibh','movian/htm','loading','1055327AIKTRX','iaeKB','toString','OpPbC','\x20-\x20','nYhiM','Invalid\x20to','BnHAG','1211436hBNCAm','NusUn','28nBfrhV','Zqnfl','ByTagName','hZYaN'];_0x2de5=function(){return _0x2fe473;};return _0x2de5();}exports[_0x48f5e1(0x158)]=function(_0x1fbdd6,_0x3a0cbf){var _0x1534b4=_0x48f5e1,_0x1b07c4={'JmROD':function(_0x20a29d,_0x4aca4c){return _0x20a29d+_0x4aca4c;},'dWzOu':_0x1534b4(0x162)+_0x1534b4(0x144)+_0x1534b4(0x15c),'VPwJg':function(_0x146fd5,_0x6ae488){return _0x146fd5(_0x6ae488);},'iaeKB':_0x1534b4(0x168)+_0x1534b4(0x16f),'nYhiM':_0x1534b4(0x145),'gFIZT':_0x1534b4(0x16d)+_0x1534b4(0x160)+_0x1534b4(0x173),'MMUwO':function(_0x470127,_0x9abef3){return _0x470127===_0x9abef3;},'Zqnfl':_0x1534b4(0x161)+_0x1534b4(0x172)+_0x1534b4(0x176)+_0x1534b4(0x15a),'EIeGh':function(_0x31b3be,_0x57fddb){return _0x31b3be<_0x57fddb;},'hZYaN':_0x1534b4(0x135)+_0x1534b4(0x14c)+_0x1534b4(0x163),'SbXcZ':function(_0x4ea426,_0x18b4ec){return _0x4ea426!==_0x18b4ec;},'RixNp':_0x1534b4(0x157),'jxiuc':_0x1534b4(0x152),'pPNml':function(_0x4199cc,_0xa62646){return _0x4199cc+_0xa62646;},'KRvzG':_0x1534b4(0x162)+_0x1534b4(0x16e),'NusUn':_0x1534b4(0x149),'eksry':_0x1534b4(0x16b),'OpPbC':function(_0x1ab2fa,_0x170ddb){return _0x1ab2fa+_0x170ddb;},'BEmFd':function(_0x2d5080,_0x170068){return _0x2d5080+_0x170068;},'uVAJN':function(_0xd0bfbd,_0x13f9af){return _0xd0bfbd+_0x13f9af;},'BnHAG':function(_0x1a2553,_0x53e280){return _0x1a2553+_0x53e280;},'dVaPJ':_0x1534b4(0x133)},_0x396529=_0x1b07c4[_0x1534b4(0x142)](_0x1b07c4[_0x1534b4(0x142)](_0x1b07c4[_0x1534b4(0x16a)],_0x1b07c4[_0x1534b4(0x14b)](encodeURIComponent,_0x3a0cbf)),_0x1b07c4[_0x1534b4(0x130)]),_0x4dfe0b=[];try{httpResponse=http[_0x1534b4(0x154)](_0x396529),searchPage=html[_0x1534b4(0x15d)](httpResponse),tbodyElement=searchPage[_0x1534b4(0x13e)][_0x1534b4(0x141)+_0x1534b4(0x13b)](_0x1b07c4[_0x1534b4(0x134)])[-0x53*-0x1d+-0x1*0xe1e+-0x4b7*-0x1];if(!tbodyElement)throw new Error(_0x1b07c4[_0x1534b4(0x14d)]);torrents=tbodyElement[_0x1534b4(0x141)+_0x1534b4(0x13b)]('tr');if(_0x1b07c4[_0x1534b4(0x143)](torrents[_0x1534b4(0x156)],-0xcb5*0x3+-0xbfb*0x1+0x79*0x6a))throw new Error(_0x1b07c4[_0x1534b4(0x13a)]);for(var _0x42b93a=-0x5cb+0x94d*-0x4+0x9*0x4c7;_0x1b07c4[_0x1534b4(0x169)](_0x42b93a,torrents[_0x1534b4(0x156)]);_0x42b93a++){var _0x329c07=torrents[_0x42b93a];try{if(!_0x329c07)throw new Error(_0x1b07c4[_0x1534b4(0x13c)]);var _0x7c9f09=_0x329c07[_0x1534b4(0x141)+_0x1534b4(0x13b)]('a'),_0x4e6fb0=_0x7c9f09[-0xfb*0x25+-0x871+-0x6b*-0x6b];if(_0x1b07c4[_0x1534b4(0x150)](typeof service,_0x1b07c4[_0x1534b4(0x175)])&&service[_0x1534b4(0x159)]&&/[xXhH]265/i[_0x1534b4(0x14a)](_0x329c07[_0x1534b4(0x155)]))return[];var _0x19f42f=_0x329c07[_0x1534b4(0x141)+_0x1534b4(0x13b)]('td')[-0x1362+-0x1fc5+0x3328],_0x1bbf8a=_0x19f42f[_0x1534b4(0x151)+'t'][_0x1534b4(0x14f)](),_0x180598=_0x4e6fb0[_0x1534b4(0x140)][_0x1534b4(0x146)+'em'](_0x1b07c4[_0x1534b4(0x174)])[_0x1534b4(0x147)],_0x3e49b1=http[_0x1534b4(0x154)](_0x1b07c4[_0x1534b4(0x13d)](_0x1b07c4[_0x1534b4(0x167)],_0x180598)),_0x3e5dcf=_0x3e49b1[_0x1534b4(0x131)](),_0x3b2424=_0x3e5dcf[_0x1534b4(0x16c)](/href="(magnet:[^"]+)"/);if(_0x3b2424&&_0x3b2424[0xc65+-0x1a3*-0xc+-0x2008])var _0x2d2cc0=_0x3b2424[0x11e2+0x1d28+0x1*-0x2f09];else continue;if(/1080p/i[_0x1534b4(0x14a)](_0x4e6fb0[_0x1534b4(0x151)+'t']))var _0x53e44a=_0x1b07c4[_0x1534b4(0x138)];if(/720p/i[_0x1534b4(0x14a)](_0x4e6fb0[_0x1534b4(0x151)+'t']))var _0x53e44a=_0x1b07c4[_0x1534b4(0x148)];if(/WEB-DL/i[_0x1534b4(0x14a)](_0x4e6fb0[_0x1534b4(0x151)+'t']))var _0x53e44a=_0x1b07c4[_0x1534b4(0x148)];if(!_0x53e44a)return[];var _0x321217=_0x1b07c4[_0x1534b4(0x132)](_0x1b07c4[_0x1534b4(0x13f)](_0x1b07c4[_0x1534b4(0x165)](_0x1b07c4[_0x1534b4(0x136)](_0x2d2cc0,_0x1b07c4[_0x1534b4(0x166)]),_0x53e44a),_0x1b07c4[_0x1534b4(0x166)]),_0x1bbf8a);_0x4dfe0b[_0x1534b4(0x14e)](_0x321217);}catch(_0x3f8386){return[];}}return _0x4dfe0b;_0x1fbdd6[_0x1534b4(0x12e)]=![];}catch(_0x66b1f1){return _0x1fbdd6[_0x1534b4(0x12e)]=![],[];}};
+// 1337x Addon for Streamian | M7 / Movian Media Center
+// Version: 1.1
+// Author: F0R3V3R50F7
+var html = require('movian/html');
+var http = require('movian/http');
+exports.search = function (page, title) {
+    var searchUrl = "https://1337x.to/sort-search/" + encodeURIComponent(title) + "/seeders/desc/1/";
+    var results = [];  // Initialize the results array
+    try {
+        httpResponse = http.request(searchUrl);
+        //page.appendItem("", "separator", { title: "HTTP Response 1: " + httpResponse });
+        searchPage = html.parse(httpResponse);
+        //page.appendItem("", "separator", { title: "HTML parsed successfully" });
+        tbodyElement = searchPage.root.getElementByTagName('tbody')[0];
+        if (!tbodyElement) {
+            throw new Error("No tbody element found.");
+        }
+        torrents = tbodyElement.getElementByTagName('tr');
+        //page.appendItem("", "separator", { title: "Number of torrents found: " + torrents.length });
+        if (torrents.length === 0) {
+            throw new Error("No torrents found on search page.");
+        }
+        for (var i = 0; i < torrents.length; i++) {
+            var torrent = torrents[i];
+            
+            try {
+                if (!torrent) {
+                    throw new Error("Invalid torrent element");
+                }
+                var titleElements = torrent.getElementByTagName('a');
+                var titleElement = titleElements[1];
+                if (typeof service !== "undefined" && service.H265Filter && /[xXhH]265/i.test(torrent.title)) {
+                    // Skip or handle the H.265 filtered content
+                    return [];
+                }
+                //if (!titleElement) {throw new Error("Second 'a' tag element is undefined");}
+                //page.appendItem("", "separator", { title: "Found title element: " + titleElement.textContent });
+                var seederElement = torrent.getElementByTagName('td')[1];
+                //if (!seederElement) {throw new Error("Seeder element not found");}
+                var seederCount = seederElement.textContent.trim();
+                var torrentPageLink = titleElement.attributes.getNamedItem('href').value;
+                //if (!torrentPageLink) {throw new Error("Invalid torrent page link");}
+                //page.appendItem("", "separator", { title: "Found Page link: " + torrentPageLink });
+                var torrentPageResponse = http.request("https://1337x.to" + torrentPageLink);
+                var htmlString = torrentPageResponse.toString();
+                var magnetLinkMatch = htmlString.match(/href="(magnet:[^"]+)"/);
+                if (magnetLinkMatch && magnetLinkMatch[1]) {
+                    var magnetLink = magnetLinkMatch[1];
+                    //page.appendItem("", "separator", { title: "FoundMag: " + magnetLink });
+                } else {
+                    //page.appendItem("", "separator", { title: "Magnet Not Found" });
+                    continue;
+                }
+                if (/1080p/i.test(titleElement.textContent)){
+                    var quality = "1080p";
+                }
+                if (/720p/i.test(titleElement.textContent)){
+                    var quality = "720p";
+                }
+                if (/WEB-DL/i.test(titleElement.textContent)){
+                    var quality = "720p";
+                }
+                if(!quality){return [];}
+                var item = magnetLink + " - " + quality + " - " + seederCount;
+                results.push(item);
+            } catch (error) {
+                //page.appendItem("", "separator", { title: "Error processing torrent: " + error.message });
+                return [];
+            }
+        }
+        return results;             
+        page.loading = false;
+    } catch (err) {
+        //page.appendItem("", "separator", { title: "Fallback Error: " + err.message });
+        page.loading = false;
+        return [];
+    }
+}
