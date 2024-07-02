@@ -325,7 +325,7 @@ new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
     popup.notify('Streamian | Raise Your Torrent Cache if You Can! #SeedAsYouStream', 5);
-    popup.notify('Streamian | We now use the Item-Menu for adding to favorites!', 5);
+    popup.notify('Streamian | Encountering Issues? Report on Reddit at r/movian', 5);
     start.start(page);
     page.loading = false;
 });
