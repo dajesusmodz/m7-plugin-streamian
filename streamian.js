@@ -15,6 +15,7 @@ var plugin = JSON.parse(Plugin.manifest);
 var logo = Plugin.path + plugin.icon;
 var yts = require('addons/ytsaddon');
 var ottsx = require('addons/ottsxaddon');
+var eztv = require('addons/eztvaddon');
 var internetarchive = require('addons/internetarchiveaddon');
 var start = require('start');
 var library = store.create('library');
@@ -100,6 +101,8 @@ function consultAddons(page, title, imdbid) {
     var ytsResults = yts.search(page, title) || [];
     var ottsxResults = ottsx.search(page, title) || [];
     var internetArchiveResults = internetarchive.search(page, title) || [];
+    var eztvResults = eztv.search(page, title) || [];
+
     ytsResults = ytsResults.map(function(result) {
         return result + " - yts";
     });
@@ -109,7 +112,12 @@ function consultAddons(page, title, imdbid) {
     internetArchiveResults = internetArchiveResults.map(function(result) {
         return result + " - internetarchive";
     });
-    var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults);
+    eztvResults = eztvResults.map(function(result) {
+        return result + " - eztv";
+    });
+
+    var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults).concat(eztvResults);
+
     function processResults() {
         var filteredResults = combinedResults.filter(function(item) {
             var parts = item.split(" - ");
@@ -129,6 +137,7 @@ function consultAddons(page, title, imdbid) {
             }
             return false;
         });
+
         console.log("IMDb ID for " + title + ":", imdbid);
         if (filteredResults.length > 0) {
             var highestSeedersItem = filteredResults.reduce(function(prev, current) {
@@ -168,11 +177,12 @@ function consultAddons(page, title, imdbid) {
             }
             page.redirect(vparams);
         } else {
-            var nostreamnotify = "No suitable streams found for " + title
+            var nostreamnotify = "No suitable streams found for " + title;
             setPageHeader(page, nostreamnotify);
             page.loading = false;
         }
     }
+
     var searchTime = parseInt(service.searchTime) * 1000;
     setTimeout(processResults, searchTime);
 }

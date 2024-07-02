@@ -1,7 +1,6 @@
 // YTS Addon for Streamian | M7 / Movian Media Center
 // Version: 1.1
 // Author: F0R3V3R50F7
-var http = require('movian/http');
 exports.search = function (page, title) {
     // YTS API URL
     var apiUrl = "https://yts.mx/api/v2/list_movies.json?query_term=" + encodeURIComponent(title);
