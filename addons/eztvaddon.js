@@ -1,9 +1,9 @@
-// EZTV Addon for Streamian | M7 / Movian Media Center
+// EZTV Scraper for Streamian | M7 / Movian Media Center
 // Version: 1.0
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
 
-    //Scrap this and scrape the page old school.
+    /*Scrap this and scrape the page old school.
 
     var apiUrl = "https://eztvx.to/api/get-torrents?imdb_id=" + encodeURIComponent(imdbid);
     var response = http.request(apiUrl);
@@ -19,5 +19,6 @@ exports.search = function (page, title) {
         return results;
     } else {
         return [];
-    }
+    }*/
+    return [];
 };

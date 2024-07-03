@@ -1,4 +1,4 @@
-// YTS Addon for Streamian | M7 / Movian Media Center
+// YTS Scraper for Streamian | M7 / Movian Media Center
 // Version: 1.1
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {

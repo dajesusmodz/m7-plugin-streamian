@@ -1,5 +1,5 @@
-// 1337x Addon for Streamian | M7 / Movian Media Center
-// Version: 1.1
+// 1337x Scraper for Streamian | M7 / Movian Media Center
+// Version: 1.2
 // Author: F0R3V3R50F7
 var html = require('movian/html');
 var http = require('movian/http');
@@ -29,10 +29,7 @@ exports.search = function (page, title) {
                 }
                 var titleElements = torrent.getElementByTagName('a');
                 var titleElement = titleElements[1];
-                if (typeof service !== "undefined" && service.H265Filter && /[xXhH]265/i.test(torrent.title)) {
-                    // Skip or handle the H.265 filtered content
-                    return [];
-                }
+                if (service.H265Filter && /[xXhH]265/i.test(torrent.textContent)) {continue;}
                 //if (!titleElement) {throw new Error("Second 'a' tag element is undefined");}
                 //page.appendItem("", "separator", { title: "Found title element: " + titleElement.textContent });
                 var seederElement = torrent.getElementByTagName('td')[1];
