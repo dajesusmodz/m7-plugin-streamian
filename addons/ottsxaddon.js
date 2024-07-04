@@ -54,9 +54,6 @@ exports.search = function (page, title) {
                 if (/720p/i.test(titleElement.textContent)){
                     var quality = "720p";
                 }
-                if (/WEB-DL/i.test(titleElement.textContent)){
-                    var quality = "720p";
-                }
                 if(!quality){return [];}
                 var item = magnetLink + " - " + quality + " - " + seederCount;
                 results.push(item);

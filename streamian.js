@@ -103,16 +103,23 @@ function consultAddons(page, title, imdbid) {
     var internetArchiveResults = internetarchive.search(page, title) || [];
     var eztvResults = eztv.search(page, title) || [];
 
-    ytsResults = ytsResults.map(function(result) {
+    // Function to check if the result has more than 0 seeders
+    function hasSeeders(result) {
+        var parts = result.split(" - ");
+        var seederCount = parseInt(parts[2]) || 0;
+        return seederCount > 0;
+    }
+
+    ytsResults = ytsResults.filter(hasSeeders).map(function(result) {
         return result + " - yts";
     });
-    ottsxResults = ottsxResults.map(function(result) {
+    ottsxResults = ottsxResults.filter(hasSeeders).map(function(result) {
         return result + " - ottsx";
     });
-    internetArchiveResults = internetArchiveResults.map(function(result) {
+    internetArchiveResults = internetArchiveResults.filter(hasSeeders).map(function(result) {
         return result + " - internetarchive";
     });
-    eztvResults = eztvResults.map(function(result) {
+    eztvResults = eztvResults.filter(hasSeeders).map(function(result) {
         return result + " - eztv";
     });
 
