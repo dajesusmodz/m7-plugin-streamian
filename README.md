@@ -10,8 +10,8 @@
 * Scrapes from YTS, 1337x, Internet Archive & EZTV.
 * Save Your Favorite Shows, Movies & Episodes to Your Library!
 * Filter Out H.265 Videos! (For Playstation 3)
-* Automatically Grabs the Best Link! - Adjust Search Time in Settings.
-* Automatically Pick Your Preferred Video Quality!
+* Automatically Grabs the Best Link!
+* Automatically Picks Your Preferred Video Quality!
 * Use Together with Official Movian/M7 Subtitles Addons!
 
 
