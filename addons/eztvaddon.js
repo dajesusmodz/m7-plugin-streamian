@@ -1,7 +1,11 @@
 // EZTV Scraper for Streamian | M7 / Movian Media Center
-// Version: 1.0
+// Version: 1.1
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
+    var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
+    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase();
+    page.appendItem("", "separator", { title: "Relevant Title Part: " + relevantTitlePart });
+                
     var searchUrl = "https://eztvx.to/search/" + encodeURIComponent(title);
     var results = [];
     try {
@@ -17,9 +21,11 @@ exports.search = function (page, title) {
                 if (!torrent) continue;
                 var titleElements = torrent.getElementByTagName('td');
                 var titleElement = titleElements[1];
-                if (service.H265Filter && /[xXhH]265/i.test(torrent.textContent)) continue;
+                if (service.H265Filter && /[xXhH]265/i.test(titleElement.textContent)) continue;
                 if (!titleElement) continue;
-                
+                var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ');
+                if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
+
                 var seederIndex = (i == 2) ? 5 : 4;
                 var seederElement = torrent.getElementByTagName('td')[seederIndex];
                 if (!seederElement) continue;

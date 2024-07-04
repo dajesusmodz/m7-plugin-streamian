@@ -341,8 +341,7 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
-    popup.notify('Streamian | Raise Your Torrent Cache if You Can! #SeedAsYouStream', 5);
-    popup.notify('Streamian | Encountering Issues? Report on Reddit at r/movian', 5);
+    popup.notify('Streamian | Raise Your Torrent Cache if You Can! #SeedAsYouStream | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch as it appears, just like magic!', 10);
     start.start(page);
     page.loading = false;
 });
@@ -465,6 +464,7 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
     page.loading = false;
 });
 new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
+    popup.notify('Streamian | Encountering issues? Please report to Reddit r/movian', 10);
     if (service.autoPlay) {
         var countdown = 3;
         setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
