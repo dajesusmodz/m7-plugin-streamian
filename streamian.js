@@ -128,64 +128,63 @@ function consultAddons(page, title, imdbid) {
     var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults).concat(eztvResults);
 
     function processResults() {
-        var filteredResults = combinedResults.filter(function(item) {
-            var parts = item.split(" - ");
-            var videoQuality = parts[1];
-
-            if (service.selectQuality == "UltraHD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
-                return true;
-            }
-            if (service.selectQuality == "FullHD" && (!/720p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
-                return true;
-            }
-            if (service.selectQuality == "HD" && (!/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
-                return true;
-            }
-            if (service.selectQuality == "SD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
-                return true;
-            }
-            return false;
-        });
-
-        var unknownQualityResults = combinedResults.filter(function(item) {
-            var parts = item.split(" - ");
-            var videoQuality = parts[1];
-            return /Unknown/i.test(videoQuality);
-        });
-
-        if (filteredResults.length === 0 || filteredResults.reduce(function(prev, current) {
-            var prevSeeders = parseInt(prev.split(" - ")[2]) || 0;
-            var currentSeeders = parseInt(current.split(" - ")[2]) || 0;
-            return (currentSeeders > prevSeeders) ? current : prev;
-        }).split(" - ")[2] < 50) {
-            filteredResults = filteredResults.concat(unknownQualityResults);
+        var preferredQualityRegex;
+        if (service.selectQuality === "UltraHD") {
+            preferredQualityRegex = /2160p/i;
+        } else if (service.selectQuality === "FullHD") {
+            preferredQualityRegex = /1080p/i;
+        } else if (service.selectQuality === "HD") {
+            preferredQualityRegex = /720p/i;
+        } else if (service.selectQuality === "SD") {
+            preferredQualityRegex = /480p|360p/i;
         }
 
-        if (filteredResults.length === 0) {
-            // If no suitable quality streams are found, use all available streams
-            filteredResults = combinedResults;
-            if (combinedResults.length > 0) {
-                var fallbackParts = combinedResults[0].split(" - ");
-                popup.notify('Streamian | Unable to find source in preferred quality, playing in ' + fallbackParts[1], 5);
-            }
-        }
+        var preferredResults = combinedResults.filter(function(item) {
+            var parts = item.split(" - ");
+            var videoQuality = parts[1];
+            return preferredQualityRegex.test(videoQuality);
+        });
 
-        console.log("IMDb ID for " + title + ":", imdbid);
-        if (filteredResults.length > 0) {
-            var highestSeedersItem = filteredResults.reduce(function(prev, current) {
-                var prevSeeders = parseInt(prev.split(" - ")[2]) || 0;
-                var currentSeeders = parseInt(current.split(" - ")[2]) || 0;
-                return (currentSeeders > prevSeeders) ? current : prev;
+        var selectedResult;
+        var maxPreferredSeeders = 0;
+
+        if (preferredResults.length > 0) {
+            preferredResults.forEach(function(item) {
+                var seederCount = parseInt(item.split(" - ")[2]) || 0;
+                if (seederCount > maxPreferredSeeders) {
+                    maxPreferredSeeders = seederCount;
+                    selectedResult = item;
+                }
             });
-            var parts = highestSeedersItem.split(" - ");
+
+            if (maxPreferredSeeders < 30) {
+                popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+                combinedResults.forEach(function(item) {
+                    var seederCount = parseInt(item.split(" - ")[2]) || 0;
+                    if (seederCount > maxPreferredSeeders) {
+                        maxPreferredSeeders = seederCount;
+                        selectedResult = item;
+                    }
+                });
+            }
+        } else {
+            popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+            combinedResults.forEach(function(item) {
+                var seederCount = parseInt(item.split(" - ")[2]) || 0;
+                if (seederCount > maxPreferredSeeders) {
+                    maxPreferredSeeders = seederCount;
+                    selectedResult = item;
+                }
+            });
+        }
+
+        if (selectedResult) {
+            var parts = selectedResult.split(" - ");
             var magnetLink = parts[0];
             var videoQuality = parts[1];
             var seederCount = parts[2];
             var source = parts[3];
             var vparams;
-            if (/Unknown/i.test(videoQuality)) {
-                popup.notify('Streamian | Could not determine video quality, playing anyway', 5);
-           }
             if (source === 'internetarchive') {
                 vparams = "videoparams:" + JSON.stringify({
                     title: title,
@@ -367,7 +366,7 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
-    popup.notify('Streamian | Raise Your Torrent Cache if You Can! #SeedAsYouStream | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch as it appears, just like magic!', 10);
+    popup.notify('Streamian | Raise Your BitTorrent Cache and #KeepTorrentsAlive | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch it here!', 10);
     start.start(page);
     page.loading = false;
 });

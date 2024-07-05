@@ -1,9 +1,13 @@
 // Archive.org Addon for Streamian | M7 / Movian Media Center
-// Version: 1.2
+// Version: 1.3
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
     var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
     var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/:/g, '');
+
+
+    //page.appendItem("", "separator", { title: "Relevant Title Part: " + relevantTitlePart });
+
 
     page.loading = true;
     var query = title;
@@ -11,17 +15,17 @@ exports.search = function (page, title) {
     var identifier;
 
     if (!episodeIdentifier) {
-        identifier = /\d{4}/i;  // Look for the date if it's a movie
-    } else {
-        identifier = /S\d+E\d+/i;  // TV show episode identifier
+        var identifier = query.match(/\d{4}/i);
     }
 
     // Check if the query includes 'Trailer Park Boys' exactly
     if (query.toLowerCase().indexOf('trailer park boys') !== -1) {
         modifiedQuery = 'doopey poopy';
     } else {
-        modifiedQuery = relevantTitlePart
+        modifiedQuery = query
     }
+
+    //page.appendItem("", "separator", { title: "Modified Query: " + modifiedQuery });
 
     var apiUrl = "https://archive.org/advancedsearch.php";
 
@@ -71,6 +75,8 @@ exports.search = function (page, title) {
                         var file = itemJson.files[j];
 
                         
+                        //page.appendItem("", "separator", { title: "File Found: " + file.name });
+                        
 
                         // Check if the file name includes the episode identifier from the query and is a video file
                         var isVideoFile = false;
@@ -81,12 +87,18 @@ exports.search = function (page, title) {
                             }
                         }
 
-                        
+                       
                         //page.appendItem("", "separator", { title: "Relevant Title: " + relevantTitlePart });
 
 
                         var titleForCheck = file.name.trim().toLowerCase().replace(/\./g, ' ');
                         if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
+                        //page.appendItem("", "separator", { title: "Identifier: " + identifier });
+                        if (!episodeIdentifier && titleForCheck.indexOf(identifier) === -1) continue;
+
+
+                        if (query.toLowerCase().indexOf('duel') !== -1 && file.name.toLowerCase().indexOf('duel_1971.mp4') !== -1 ) {continue;}
+
 
                         //page.appendItem("", "separator", { title: "File Found: " + file.name });
                         
@@ -103,11 +115,11 @@ exports.search = function (page, title) {
                         if (service.H265Filter && /[xXhH]265/i.test(file.name)) {continue;}
 
                         var quality = "Unknown";
-                        if (/1080p/i.test(file.name)){
+                        if (/1080p/i.test(titleForCheck)){
                             quality = "1080p";
-                        } else if (/720p/i.test(file.name)){
+                        } else if (/720p/i.test(titleForCheck)){
                             quality = "720p";
-                        } else if (/XviD/i.test(file.name)){
+                        } else if (/XviD/i.test(titleForCheck)){
                             quality = "480p";
                         }
 
@@ -134,7 +146,8 @@ exports.search = function (page, title) {
                 for (var i = 0; i < matchedFiles.length; i++) {
                     var magnetLink = matchedFiles[i].item;
                     var quality = matchedFiles[i].quality;
-                    var seederCount = '15'; // Dummy value - since we're not actually dealing with torrents
+                    var seederCount = '60'; // Dummy value - since we're not actually dealing with torrents
+                    //page.appendItem("", "separator", { title: "Quality Selected: " + quality });
 
                     var item = magnetLink + " - " + quality + " - " + seederCount;
                     results.push(item);
@@ -149,7 +162,8 @@ exports.search = function (page, title) {
                     for (var i = 0; i < nonMatchedFiles.length; i++) {
                         var magnetLink = nonMatchedFiles[i].item;
                         var quality = nonMatchedFiles[i].quality;
-                        var seederCount = '1000'; // Dummy value - since we're not actually dealing with torrents
+                        var seederCount = '60'; // Dummy value - since we're not actually dealing with torrents
+                        //page.appendItem("", "separator", { title: "Quality Selected: " + quality });
 
                         var item = magnetLink + " - " + quality + " - " + seederCount;
                         results.push(item);
