@@ -168,12 +168,14 @@ function consultAddons(page, title, imdbid) {
                 });
             }
         } else {
-            popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
             combinedResults.forEach(function(item) {
                 var seederCount = parseInt(item.split(" - ")[2]) || 0;
                 if (seederCount > maxPreferredSeeders) {
                     maxPreferredSeeders = seederCount;
                     selectedResult = item;
+                }
+                if (selectedResult) {
+                    popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
                 }
             });
         }

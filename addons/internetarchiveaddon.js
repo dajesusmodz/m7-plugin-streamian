@@ -1,5 +1,5 @@
 // Archive.org Addon for Streamian | M7 / Movian Media Center
-// Version: 1.3
+// Version: 1.4
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
     var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
@@ -21,9 +21,15 @@ exports.search = function (page, title) {
     // Check if the query includes 'Trailer Park Boys' exactly
     if (query.toLowerCase().indexOf('trailer park boys') !== -1) {
         modifiedQuery = 'doopey poopy';
+    } else if (episodeIdentifier) {
+        modifiedQuery = relevantTitlePart;
     } else {
         modifiedQuery = query
     }
+    
+    
+
+    
 
     //page.appendItem("", "separator", { title: "Modified Query: " + modifiedQuery });
 
@@ -52,7 +58,7 @@ exports.search = function (page, title) {
             var videoExtensions = ['.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv'];
 
             // Create a new cleaned query variable
-            var cleanedQuery = query.replace(identifier, '');
+            var cleanedQuery = relevantTitlePart;
 
             // Iterate over each document in the response
             for (var i = 0; i < json.response.docs.length; i++) {
@@ -78,7 +84,7 @@ exports.search = function (page, title) {
                         //page.appendItem("", "separator", { title: "File Found: " + file.name });
                         
 
-                        // Check if the file name includes the episode identifier from the query and is a video file
+                        // Check if the file is a video file
                         var isVideoFile = false;
                         for (var k = 0; k < videoExtensions.length; k++) {
                             if (file.name.toLowerCase().indexOf(videoExtensions[k]) !== -1) {
@@ -98,6 +104,7 @@ exports.search = function (page, title) {
 
 
                         if (query.toLowerCase().indexOf('duel') !== -1 && file.name.toLowerCase().indexOf('duel_1971.mp4') !== -1 ) {continue;}
+                        if (query.toLowerCase().indexOf('uncle buck') !== -1 && file.name.toLowerCase().indexOf('bbc') !== -1 ) {continue;}
 
 
                         //page.appendItem("", "separator", { title: "File Found: " + file.name });
