@@ -39,6 +39,7 @@ settings.createMultiOpt('selectQuality', 'Preferred Quality', [
     ['UltraHD', 'Ultra HD | 4k'],
     ['FullHD', 'Full HD | 1080p', true],
     ['HD', 'HD | 720p'],
+    ['SD', 'SD | 480p'],
   ], function(v) {
   service.selectQuality = v;
 });
@@ -97,6 +98,7 @@ function removeFromLibrary(title) {
     }
 }
 function consultAddons(page, title, imdbid) {
+    page.loading = true;
     page.model.contents = 'list';
     var ytsResults = yts.search(page, title) || [];
     var ottsxResults = ottsx.search(page, title) || [];
@@ -130,20 +132,43 @@ function consultAddons(page, title, imdbid) {
             var parts = item.split(" - ");
             var videoQuality = parts[1];
 
-            if (service.selectQuality == "UltraHD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality) && !/Unknown/i.test(videoQuality))) {
+            if (service.selectQuality == "UltraHD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
                 return true;
             }
-            if (service.selectQuality == "FullHD" && (!/720p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/Unknown/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
+            if (service.selectQuality == "FullHD" && (!/720p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
                 return true;
             }
-            if (service.selectQuality == "HD" && (!/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality) && !/Unknown/i.test(videoQuality))) {
+            if (service.selectQuality == "HD" && (!/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/480p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
                 return true;
             }
-            if (/Unknown/i.test(videoQuality)) {
+            if (service.selectQuality == "SD" && (!/720p/i.test(videoQuality) && !/1080p/i.test(videoQuality) && !/2160p/i.test(videoQuality) && !/360p/i.test(videoQuality))) {
                 return true;
             }
             return false;
         });
+
+        var unknownQualityResults = combinedResults.filter(function(item) {
+            var parts = item.split(" - ");
+            var videoQuality = parts[1];
+            return /Unknown/i.test(videoQuality);
+        });
+
+        if (filteredResults.length === 0 || filteredResults.reduce(function(prev, current) {
+            var prevSeeders = parseInt(prev.split(" - ")[2]) || 0;
+            var currentSeeders = parseInt(current.split(" - ")[2]) || 0;
+            return (currentSeeders > prevSeeders) ? current : prev;
+        }).split(" - ")[2] < 50) {
+            filteredResults = filteredResults.concat(unknownQualityResults);
+        }
+
+        if (filteredResults.length === 0) {
+            // If no suitable quality streams are found, use all available streams
+            filteredResults = combinedResults;
+            if (combinedResults.length > 0) {
+                var fallbackParts = combinedResults[0].split(" - ");
+                popup.notify('Streamian | Unable to find source in preferred quality, playing in ' + fallbackParts[1], 5);
+            }
+        }
 
         console.log("IMDb ID for " + title + ":", imdbid);
         if (filteredResults.length > 0) {
@@ -159,8 +184,8 @@ function consultAddons(page, title, imdbid) {
             var source = parts[3];
             var vparams;
             if (/Unknown/i.test(videoQuality)) {
-                popup.notify('Streamian | Internet Archive: Could not determine video quality', 5);
-            }
+                popup.notify('Streamian | Could not determine video quality, playing anyway', 5);
+           }
             if (source === 'internetarchive') {
                 vparams = "videoparams:" + JSON.stringify({
                     title: title,
@@ -182,6 +207,7 @@ function consultAddons(page, title, imdbid) {
                     imdbid: imdbid
                 });
             }
+            page.loading = false;
             page.redirect(vparams);
         } else {
             var nostreamnotify = "No suitable streams found for " + title;
@@ -477,7 +503,7 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
             setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
             if (countdown <= 0) {
                 clearInterval(timer);
-                setPageHeader(page, "Searching for best link..");
+                setPageHeader(page, "Searching for best link, please wait..");
                 consultAddons(page, decodeURIComponent(title), imdbid);
             }
         }, 1000);

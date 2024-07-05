@@ -1,7 +1,11 @@
 // Archive.org Addon for Streamian | M7 / Movian Media Center
-// Version: 1.0
+// Version: 1.2
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
+    var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
+    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/:/g, '');
+
+    page.loading = true;
     var query = title;
     var episodeIdentifier = query.match(/s\d+e\d+/gi);
     var identifier;
@@ -12,9 +16,12 @@ exports.search = function (page, title) {
         identifier = /S\d+E\d+/i;  // TV show episode identifier
     }
 
-    var regex = /Trailer Park Boys\s+S\d+E\d+/i;
-    var trailerparkboysQuery = regex.test(query) ? query.replace(regex, 'doopey poopy') : query;
-    var modifiedQuery = episodeIdentifier ? trailerparkboysQuery.replace(identifier, '') : trailerparkboysQuery;
+    // Check if the query includes 'Trailer Park Boys' exactly
+    if (query.toLowerCase().indexOf('trailer park boys') !== -1) {
+        modifiedQuery = 'doopey poopy';
+    } else {
+        modifiedQuery = relevantTitlePart
+    }
 
     var apiUrl = "https://archive.org/advancedsearch.php";
 
@@ -42,7 +49,6 @@ exports.search = function (page, title) {
 
             // Create a new cleaned query variable
             var cleanedQuery = query.replace(identifier, '');
-            //page.appendItem('', 'separator', { title: "Cleaned Query: " + cleanedQuery });
 
             // Iterate over each document in the response
             for (var i = 0; i < json.response.docs.length; i++) {
@@ -66,6 +72,8 @@ exports.search = function (page, title) {
                     for (var j = 0; j < itemJson.files.length; j++) {
                         var file = itemJson.files[j];
 
+                        
+
                         // Check if the file name includes the episode identifier from the query and is a video file
                         var isVideoFile = false;
                         for (var k = 0; k < videoExtensions.length; k++) {
@@ -75,11 +83,38 @@ exports.search = function (page, title) {
                             }
                         }
 
+                        
+                        //page.appendItem("", "separator", { title: "Relevant Title: " + relevantTitlePart });
+
+
+                        var titleForCheck = file.name.trim().toLowerCase().replace(/\./g, ' ');
+                        if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
+
+                        //page.appendItem("", "separator", { title: "File Found: " + file.name });
+                        
+                        // Exclude "Trailer Park Boys: Jail" only if the input title does not include it
+                        var excludeJail = relevantTitlePart.indexOf('trailer park boys jail') === -1 && titleForCheck.indexOf('trailer park boys jail') !== -1;
+                        if (excludeJail) continue;
+
+                        var excludeAnimated = relevantTitlePart.indexOf('trailer park boys the animated series') === -1 && titleForCheck.indexOf('trailer park boys the animated series') !== -1;
+                        if (excludeAnimated) continue;
+
+                        var excludeAnimated = relevantTitlePart.indexOf('trailer park boys out of the park') === -1 && titleForCheck.indexOf('trailer park boys out of the park') !== -1;
+                        if (excludeAnimated) continue;
+
+                        var quality = "Unknown";
+                        if (/1080p/i.test(file.name)){
+                            quality = "1080p";
+                        } else if (/720p/i.test(file.name)){
+                            quality = "720p";
+                        } else if (/XviD/i.test(file.name)){
+                            quality = "480p";
+                        }
+
                         if (episodeIdentifier && file.name.toLowerCase().indexOf(episodeIdentifier[0].toLowerCase()) !== -1 && isVideoFile) {
                             foundFile = true;
                             var videoLink = "https://archive.org/download/" + doc.identifier + "/" + encodeURIComponent(file.name);
-                            var item = videoLink;  // Just the video link
-                            matchedFiles.push({ title: file.name, item: item });
+                            matchedFiles.push({ title: file.name, item: videoLink, quality: quality });
                         } else if (isVideoFile) {
                             var queryWords = cleanedQuery.toLowerCase().split(/\s+/);
 
@@ -87,8 +122,7 @@ exports.search = function (page, title) {
                                 return file.name.toLowerCase().indexOf(word) !== -1;
                             })) {
                                 var videoLink = "https://archive.org/download/" + doc.identifier + "/" + encodeURIComponent(file.name);
-                                var item = videoLink;
-                                nonMatchedFiles.push({ title: file.name, item: item });
+                                nonMatchedFiles.push({ title: file.name, item: videoLink, quality: quality });
                             }
                         }
                     }
@@ -97,35 +131,41 @@ exports.search = function (page, title) {
 
             // Append matched files if any
             if (matchedFiles.length > 0) {
-                var quality = 'Unknown';
-                var seederCount = '15'; // Dummy value - since we're not actually dealing with torrents
+                for (var i = 0; i < matchedFiles.length; i++) {
+                    var magnetLink = matchedFiles[i].item;
+                    var quality = matchedFiles[i].quality;
+                    var seederCount = '15'; // Dummy value - since we're not actually dealing with torrents
 
-                var magnetLink = matchedFiles[0].item;
-                var item = magnetLink + " - " + quality + " - " + seederCount;
-                results.push(item);
+                    var item = magnetLink + " - " + quality + " - " + seederCount;
+                    results.push(item);
+                }
             } else {
                 // Sort nonMatchedFiles by the length of the title
                 nonMatchedFiles.sort(function(a, b) {
                     return a.title.length - b.title.length;
                 });
 
-                var quality = 'Unknown';
-                var seederCount = '15'; // Dummy value - since we're not actually dealing with torrents
-
                 if (nonMatchedFiles.length > 0 && !episodeIdentifier) {
-                    var magnetLink = nonMatchedFiles[0].item;
-                    var item = magnetLink + " - " + quality + " - " + seederCount;
-                    results.push(item);
+                    for (var i = 0; i < nonMatchedFiles.length; i++) {
+                        var magnetLink = nonMatchedFiles[i].item;
+                        var quality = nonMatchedFiles[i].quality;
+                        var seederCount = '1000'; // Dummy value - since we're not actually dealing with torrents
+
+                        var item = magnetLink + " - " + quality + " - " + seederCount;
+                        results.push(item);
+                    }
                 } else {
                     return [];
                 }
             }
+            page.loading = false;
             return results;
         } else {
             return [];
         }
     } catch (error) {
-        showtime.trace("Error fetching data from Internet Archive: " + error);
+        //showtime.trace("Error fetching data from Internet Archive: " + error);
+        page.loading = false;
         return [];
     }
 };

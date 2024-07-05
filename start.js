@@ -254,14 +254,16 @@ exports.start = function (page) {
             var movieDetailsResponse = http.request(movieDetailsUrl);
             var movieDetails = JSON.parse(movieDetailsResponse);
             var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
+            title = title + " " + releaseDate;
             var movieurl;
             if (service.autoPlay) {
                 movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
             } else {
                 movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
             }
+            title = item.title + " " + "(" + releaseDate + ")";
             var item = page.appendItem(movieurl, "video", {
-                title: title + (releaseDate ? " (" + releaseDate + ")" : ""),
+                title: title,
                 icon: posterPath
             });
             var type = "movie";
@@ -540,14 +542,16 @@ exports.trendingmovies = function (page) {
             var movieDetailsResponse = http.request(movieDetailsUrl);
             var movieDetails = JSON.parse(movieDetailsResponse);
             var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
+            title = title + " " + releaseDate;
             var movieurl;
             if (service.autoPlay) {
                 movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
             } else {
                 movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
             }
+            title = item.title + " " + "(" + releaseDate + ")";
             var item = page.appendItem(movieurl, "video", {
-                title: title + (releaseDate ? " (" + releaseDate + ")" : ""),
+                title: title,
                 icon: posterPath
             });
             var type = "movie";

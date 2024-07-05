@@ -2,6 +2,7 @@
 // Version: 1.1
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
+    page.loading = true;
     // YTS API URL
     var apiUrl = "https://yts.mx/api/v2/list_movies.json?query_term=" + encodeURIComponent(title);
     var response = http.request(apiUrl);
@@ -18,9 +19,11 @@ exports.search = function (page, title) {
                 results.push(item);
             });
         });
+        page.loading = false;
         return results;
     } else {
         //page.appendItem("", "message", { title: "No results found on YTS for " + decodedTitle });
+        page.loading = false;
         return [];
     }
 };
