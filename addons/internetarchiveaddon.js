@@ -54,8 +54,6 @@ exports.search = function (page, title) {
             for (var i = 0; i < json.response.docs.length; i++) {
                 var doc = json.response.docs[i];
 
-                //if (service.H265Filter && /[xXhH]265/i.test(doc.format)) {continue;} <----------- Couldn't find any HEVC content on the site at all
-
                 if (doc.subject && doc.subject.indexOf('Movie Trailer') !== -1) {
                     continue;
                 }
@@ -101,6 +99,8 @@ exports.search = function (page, title) {
 
                         var excludeAnimated = relevantTitlePart.indexOf('trailer park boys out of the park') === -1 && titleForCheck.indexOf('trailer park boys out of the park') !== -1;
                         if (excludeAnimated) continue;
+
+                        if (service.H265Filter && /[xXhH]265/i.test(file.name)) {continue;}
 
                         var quality = "Unknown";
                         if (/1080p/i.test(file.name)){
