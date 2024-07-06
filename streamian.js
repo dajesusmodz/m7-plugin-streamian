@@ -158,7 +158,6 @@ function consultAddons(page, title, imdbid) {
             });
 
             if (maxPreferredSeeders < 30) {
-                popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
                 combinedResults.forEach(function(item) {
                     var seederCount = parseInt(item.split(" - ")[2]) || 0;
                     if (seederCount > maxPreferredSeeders) {
@@ -166,6 +165,9 @@ function consultAddons(page, title, imdbid) {
                         selectedResult = item;
                     }
                 });
+                if (selectedResult) {
+                    popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+                }
             }
         } else {
             combinedResults.forEach(function(item) {
@@ -174,10 +176,10 @@ function consultAddons(page, title, imdbid) {
                     maxPreferredSeeders = seederCount;
                     selectedResult = item;
                 }
-                if (selectedResult) {
-                    popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
-                }
             });
+            if (selectedResult) {
+                popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+            }
         }
 
         if (selectedResult) {

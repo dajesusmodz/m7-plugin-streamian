@@ -4,7 +4,7 @@
 	"homepage": "http://github.com/lprot/movian-plugin-streamian",
 	"title": "Streamian",
 	"synopsis": "One stop for TV Shows & Movies with Personal Library & Subtitle Plugin Support.",
-	"version": "2.0",
+	"version": "2.1",
         "file": "streamian.js",
 	"m7Version": "7.0.0",
 	"type": "ecmascript",
