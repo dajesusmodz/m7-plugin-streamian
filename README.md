@@ -33,8 +33,8 @@
 ![Stable-Release plugin.zip Download (Latest Version)](/streamian_stable.zip?raw=true)
 
 
-**Available Languages:**
+**Banned Trackers:**
 
-* English
+* 'Coppersurfer' (Bogus Seeder Counts)
 
 
