@@ -113,16 +113,16 @@ function consultAddons(page, title, imdbid) {
     }
 
     ytsResults = ytsResults.filter(hasSeeders).map(function(result) {
-        return result + " - yts";
+        return result + " - Yify";
     });
     ottsxResults = ottsxResults.filter(hasSeeders).map(function(result) {
-        return result + " - ottsx";
+        return result + " - 1337x";
     });
     internetArchiveResults = internetArchiveResults.filter(hasSeeders).map(function(result) {
-        return result + " - internetarchive";
+        return result + " - Archive.org";
     });
     eztvResults = eztvResults.filter(hasSeeders).map(function(result) {
-        return result + " - eztv";
+        return result + " - EZTV";
     });
 
     var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults).concat(eztvResults);
@@ -189,7 +189,14 @@ function consultAddons(page, title, imdbid) {
             var seederCount = parts[2];
             var source = parts[3];
             var vparams;
-            if (source === 'internetarchive') {
+
+            if (source === 'Archive.org') {
+                popup.notify("Streamian | Streaming from " + source + " Direct" + " at " + videoQuality, 10);
+            } else {
+                popup.notify("Streamian | Streaming from " + source + " with " + seederCount + " Seeders" + " at " + videoQuality, 10);
+            }
+
+            if (source === 'Archive.org') {
                 vparams = "videoparams:" + JSON.stringify({
                     title: title,
                     canonicalUrl: magnetLink,
@@ -213,7 +220,7 @@ function consultAddons(page, title, imdbid) {
             page.loading = false;
             page.redirect(vparams);
         } else {
-            var nostreamnotify = "No suitable streams found for " + title;
+            var nostreamnotify = "Streamian | No suitable streams found for " + title;
             setPageHeader(page, nostreamnotify);
             page.loading = false;
         }

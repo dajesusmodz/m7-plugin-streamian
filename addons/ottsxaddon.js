@@ -55,6 +55,10 @@ exports.search = function (page, title) {
                     continue;
                 }
 
+                if (/coppersurfer/i.test(magnetLink)){
+                    continue;
+                }
+
                 var quality = "Unknown";
                 if (/1080p/i.test(titleElement.textContent)){
                     quality = "1080p";
