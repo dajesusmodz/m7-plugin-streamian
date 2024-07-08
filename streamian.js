@@ -462,6 +462,10 @@ new page.Route(plugin.id + ":search", function(page, query) {
     });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows & Movies...' });
+    page.appendItem('', 'separator', { title: '', });
+    page.appendItem(plugin.id + ":search", "video", {
+        icon: Plugin.path + "refresh.png"
+    });
     page.loading = false;
 });
 new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
