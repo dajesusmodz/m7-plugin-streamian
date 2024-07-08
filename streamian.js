@@ -364,7 +364,7 @@ new page.Route(plugin.id + ":library", function(page) {
         icon: Plugin.path + "ondemand_off.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_off.png",
@@ -385,7 +385,7 @@ new page.Route(plugin.id + ":trendingshows", function(page) {
         icon: Plugin.path + "ondemand_on.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_off.png",
@@ -406,7 +406,7 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
         icon: Plugin.path + "ondemand_on.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_off.png",
@@ -427,7 +427,7 @@ new page.Route(plugin.id + ":start", function(page) {
         icon: Plugin.path + "ondemand_on.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_off.png",
@@ -449,7 +449,7 @@ new page.Route(plugin.id + ":search", function(page, query) {
         icon: Plugin.path + "ondemand_off.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_on.png",
@@ -473,7 +473,7 @@ new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
         icon: Plugin.path + "ondemand_off.png",
     });
     page.appendItem(plugin.id + ":tv", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "tv_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "search_on.png",
