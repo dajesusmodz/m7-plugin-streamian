@@ -1,10 +1,10 @@
 // 1337x Scraper for Streamian | M7 / Movian Media Center
-// Version: 1.3
+// Version: 1.4
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
     page.loading = true;
     var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
-    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase();
+    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
     //page.appendItem("", "separator", { title: "Relevant Title Part: " + relevantTitlePart });
 
     var searchUrl = "https://1337x.to/sort-search/" + encodeURIComponent(title) + "/seeders/desc/1/";
@@ -34,10 +34,13 @@ exports.search = function (page, title) {
                 var titleElement = titleElements[1];
                 if (service.H265Filter && /[xXhH]265/i.test(titleElement.textContent)) {continue;}
 
-                var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ');
+                //page.appendItem("", "separator", { title: "Relevant Title Part: " + relevantTitlePart });
+                //page.appendItem("", "separator", { title: "Found title element: " + titleElement.textContent });
+
+                var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
                 if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
                 //if (!titleElement) {throw new Error("Second 'a' tag element is undefined");}
-                //page.appendItem("", "separator", { title: "Found title element: " + titleElement.textContent });
+                
                 var seederElement = torrent.getElementByTagName('td')[1];
                 //if (!seederElement) {throw new Error("Seeder element not found");}
                 var seederCount = seederElement.textContent.trim();

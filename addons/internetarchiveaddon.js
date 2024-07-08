@@ -1,9 +1,9 @@
 // Archive.org Addon for Streamian | M7 / Movian Media Center
-// Version: 1.4
+// Version: 1.5
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
     var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
-    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/:/g, '');
+    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
 
 
     //page.appendItem("", "separator", { title: "Relevant Title Part: " + relevantTitlePart });
@@ -97,7 +97,7 @@ exports.search = function (page, title) {
                         //page.appendItem("", "separator", { title: "Relevant Title: " + relevantTitlePart });
 
 
-                        var titleForCheck = file.name.trim().toLowerCase().replace(/\./g, ' ');
+                        var titleForCheck = file.name.trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
                         if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
                         //page.appendItem("", "separator", { title: "Identifier: " + identifier });
                         if (!episodeIdentifier && titleForCheck.indexOf(identifier) === -1) continue;

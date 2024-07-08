@@ -1,10 +1,10 @@
 // EZTV Scraper for Streamian | M7 / Movian Media Center
-// Version: 1.2
+// Version: 1.3
 // Author: F0R3V3R50F7
 exports.search = function (page, title) {
     page.loading = true;
     var relevantTitlePartMatch = title.match(/^(.*?)(?:\sS\d{2}E\d{2}|\s\d{4})/i);
-    var relevantTitlePart = relevantTitlePartMatch ? relevantTitlePartMatch[1].trim().toLowerCase() : '';
+    var relevantTitlePart = relevantTitlePartMatch[1].trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
 
     var searchUrl = "https://eztvx.to/search/" + encodeURIComponent(title);
     var results = [];
@@ -23,7 +23,7 @@ exports.search = function (page, title) {
                 var titleElement = titleElements[1];
                 if (service.H265Filter && /[xXhH]265/i.test(titleElement.textContent)) continue;
                 if (!titleElement) continue;
-                var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ');
+                var titleForCheck = titleElement.textContent.trim().toLowerCase().replace(/\./g, ' ').replace(/[\-:]/g, '');
                 if (titleForCheck.indexOf(relevantTitlePart) === -1) continue;
 
                 var seederElement = titleElements[titleElements.length - 1];
