@@ -18,6 +18,7 @@ var ottsx = require('addons/ottsxaddon');
 var eztv = require('addons/eztvaddon');
 var internetarchive = require('addons/internetarchiveaddon');
 var start = require('start');
+var newstart = require('newstart');
 var library = store.create('library');
 if (!library.list) {
   library.list = JSON.stringify([]);
@@ -259,7 +260,7 @@ function searchOnTmdb(page, query) {
             }
         });
         if (movies.length > 0) {
-            page.appendItem("", "separator", { title: "Movies" });
+            page.appendItem("", "separator", { title: "  Movies                                                                                                                                                                                                                                                               " });
             page.appendItem("", "separator", { title: "" });
             movies.forEach(function (item) {
                 var title = item.title;
@@ -295,7 +296,7 @@ function searchOnTmdb(page, query) {
             });
         }
         if (tvShows.length > 0) {
-            page.appendItem("", "separator", { title: "TV Shows" });
+            page.appendItem("", "separator", { title: "  Shows                                                                                                                                                                                                                                                               " });
             page.appendItem("", "separator", { title: "" });
             tvShows.forEach(function (item) {
                 var title = (item.name);
@@ -359,29 +360,129 @@ function searchOnTmdb(page, query) {
 new page.Route(plugin.id + ":library", function(page) {
     setPageHeader(page, "Your Library");
     page.model.contents = 'grid';
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_off.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_on.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
     start.library(page);
     page.loading = false;
 });
 new page.Route(plugin.id + ":trendingshows", function(page) {
-    setPageHeader(page, "Trending Shows");
+    setPageHeader(page, "Popular Shows");
     page.model.contents = 'grid';
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
     start.trendingshows(page);
     page.loading = false;
 });
 new page.Route(plugin.id + ":trendingmovies", function(page) {
-    setPageHeader(page, "Trending Movies");
+    setPageHeader(page, "Popular Movies");
     page.model.contents = 'grid';
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
     start.trendingmovies(page);
     page.loading = false;
 });
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
     popup.notify('Streamian | Raise Your BitTorrent Cache and #KeepTorrentsAlive | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch it here!', 10);
-    start.start(page);
+    newstart.start(page);
     page.loading = false;
 });
-new page.Route(plugin.id + ":search:(.*)", function(page, query) {
+new page.Route(plugin.id + ":search", function(page, query) {
+    page.model.contents = 'grid';
+    setPageHeader(page, "Search for Shows & Movies!");
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_off.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_on.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem('', 'separator', { title: '', });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows & Movies...' });
+    page.loading = false;
+});
+new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "ondemand_off.png",
+    });
+    page.appendItem(plugin.id + ":tv", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "search_on.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "off.png",
+    });
+    page.appendItem('', 'separator', { title: '', });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows & Movies...' });
+    page.appendItem('', 'separator', { title: '', });
     searchOnTmdb(page, query);
 });
 new page.Route(plugin.id + ":season:(.*)", function(page, title) {
