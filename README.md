@@ -8,11 +8,12 @@
 **Features:**
 
 * Scrapes from YTS, 1337x, Internet Archive & EZTV.
-* Save Your Favorite Shows, Movies & Episodes to Your Library!
+* Save Your Favorite Shows, Movies, Episodes & Channels to Your Library!
 * Filter Out H.265 Videos! (For Playstation 3)
 * Automatically Grabs the Best Link!
 * Automatically Picks Your Preferred Video Quality!
 * Use Together with Official Movian/M7 Subtitles Addons!
+* Browse a range of Free-To-Air Channel Providers.
 
 
 **How to Install (Official Plugin Repository):**
@@ -36,5 +37,41 @@
 **Banned Trackers:**
 
 * 'Coppersurfer' (Bogus Seeder Counts)
+
+
+**Streamian Currently Serves:**
+
+* United States 🇺🇸
+* United Kingdom 🇬🇧
+* France 🇫🇷
+* Canada 🇨🇦
+* Brazil 🇧🇷
+* South Korea 🇰🇷
+* Mexico 🇲🇽
+* Chile 🇨🇱
+* Germany 🇩🇪
+* Switzerland 🇨🇭
+* Denmark 🇩🇰
+* Spain 🇪🇸
+* Sweden 🇸🇪
+* Austria 🇦🇹
+* Italy 🇮🇹
+* India 🇮🇳
+* Norway 🇳🇴
+
+
+**Channel Providers:**
+
+* OTA TV / Terrestrial Television (Via FreeTV on GitHub)
+* Pluto TV (Via i.mjh.nz)
+* Rakuten TV (Via Apsattv)
+* Samsung TV Plus (Via i.mjh.nz)
+* Redbox TV (Via Apsattv)
+* Stirr (Via i.mjh.nz)
+
+
+**Available App Languages:**
+
+* English
 
 
