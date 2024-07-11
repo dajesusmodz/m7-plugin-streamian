@@ -1,13 +1,8 @@
-// * Page Module for Streamian | M7 / Movian Media Center
+// On-Demand Module for Streamian | M7 / Movian Media Center
 // Version: 1.0
 // Author: F0R3V3R50F7
-
-
-
 var http = require('movian/http');
-exports.start = function (page) {
-    
-
+exports.ondemand = function (page) {
     function fetchTrending(type) {
         var apiUrl = "https://api.themoviedb.org/3/trending/" + type + "/week?api_key=a0d71cffe2d6693d462af9e4f336bc06";
         try {

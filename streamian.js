@@ -1,6 +1,6 @@
                                                                         /*| Streamian for Movian/M7 Media Center | 2024 F0R3V3R50F7 |*/
 
-/*|---------------------------------------------------------------------------------------- Establish Variables ----------------------------------------------------------------------------------------|*/
+/*|---------------------------------------------------------------------------------------- Pre - Requisits ----------------------------------------------------------------------------------------|*/
 
 
 var page = require('movian/page');
@@ -18,16 +18,18 @@ var ottsx = require('addons/ottsxaddon');
 var eztv = require('addons/eztvaddon');
 var internetarchive = require('addons/internetarchiveaddon');
 var start = require('start');
-var newstart = require('newstart');
+var ondemand = require('ondemand');
+var channels = require('channels');
+var search = require('search');
 var library = store.create('library');
-if (!library.list) {library.list = JSON.stringify([]);}
 var otalibrary = store.create('otalibrary');
-if (!otalibrary.list) {otalibrary.list = '[]';}
 
 
 /*|---------------------------------------------------------------------------------------- Establish Services ----------------------------------------------------------------------------------------|*/
 
 
+if (!library.list) {library.list = JSON.stringify([]);}
+if (!otalibrary.list) {otalibrary.list = '[]';}
 service.create(plugin.title, plugin.id + ":start", 'video', true, logo);
 settings.globalSettings(plugin.id, plugin.title, logo, plugin.synopsis);
 settings.createBool('h265filter', 'Enable H.265 Filter (Enable on Playstation 3)', false, function(v) {
@@ -106,6 +108,7 @@ function isFavorite(title) {
       return fav.identifier === title;
     });
 }
+
 function addToLibrary(title, type, imdbid) {
     var list = JSON.parse(library.list);
     if (isFavorite(title)) {
@@ -121,6 +124,7 @@ function addToLibrary(title, type, imdbid) {
       library.list = JSON.stringify(list);
     }
 }
+
 function removeFromLibrary(title) {
     var list = JSON.parse(library.list);
     if (title) {
@@ -139,6 +143,7 @@ function removeFromLibrary(title) {
       popup.notify('Video not found in favorites.', 3);
     }
 }
+
 function consultAddons(page, title, imdbid) {
     page.loading = true;
     page.model.contents = 'list';
@@ -233,9 +238,9 @@ function consultAddons(page, title, imdbid) {
             var vparams;
 
             if (source === 'Archive.org') {
-                popup.notify("Streamian | Streaming from " + source + " Direct" + " at " + videoQuality, 10);
+                popup.notify("Streamian | Streaming from " + source + " direct" + " at " + videoQuality, 10);
             } else {
-                popup.notify("Streamian | Streaming from " + source + " with " + seederCount + " Seeders" + " at " + videoQuality, 10);
+                popup.notify("Streamian | Streaming from " + source + " with " + seederCount + " seeders" + " at " + videoQuality, 10);
             }
 
             if (source === 'Archive.org') {
@@ -262,7 +267,7 @@ function consultAddons(page, title, imdbid) {
             page.loading = false;
             page.redirect(vparams);
         } else {
-            var nostreamnotify = "Streamian | No suitable streams found for " + title;
+            var nostreamnotify = "No suitable streams found for " + title;
             setPageHeader(page, nostreamnotify);
             page.loading = false;
         }
@@ -271,6 +276,7 @@ function consultAddons(page, title, imdbid) {
     var searchTime = parseInt(service.searchTime) * 1000;
     setTimeout(processResults, searchTime);
 }
+
 function setPageHeader(page, title) {
     if (page.metadata) {
         page.metadata.title = title;
@@ -282,117 +288,7 @@ function setPageHeader(page, title) {
     page.entries = 0;
     page.loading = true;
 }
-function searchOnTmdb(page, query) {
-    page.model.contents = 'grid';
-    setPageHeader(page, query);
-    var apiKey = "a0d71cffe2d6693d462af9e4f336bc06";
-    var apiUrl = "https://api.themoviedb.org/3/search/multi?api_key=" + apiKey + "&query=" + encodeURIComponent(query);
-    var response = http.request(apiUrl);
-    var json = JSON.parse(response);
-    var fallbackImage = Plugin.path + "cvrntfnd.png";
-    if (json.results && json.results.length > 0) {
-        var movies = [];
-        var tvShows = [];
-        json.results.forEach(function (item) {
-            if (item.media_type === 'movie') {
-                movies.push(item);
-            } else if (item.media_type === 'tv') {
-                tvShows.push(item);
-            }
-        });
-        if (movies.length > 0) {
-            page.appendItem("", "separator", { title: "  Movies                                                                                                                                                                                                                                                               " });
-            page.appendItem("", "separator", { title: "" });
-            movies.forEach(function (item) {
-                var title = item.title;
-                var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : fallbackImage;
-                var releaseDate = item.release_date ? item.release_date.substring(0, 4) : '';
-                title = title + " " + releaseDate;
-                // Fetch movie details to get the IMDb ID
-                var movieDetailsUrl = "https://api.themoviedb.org/3/movie/" + item.id + "?api_key=" + apiKey + "&append_to_response=external_ids";
-                var movieDetailsResponse = http.request(movieDetailsUrl);
-                var movieDetails = JSON.parse(movieDetailsResponse);
-                var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
-                var movieurl;
-                if (service.autoPlay) {
-                    movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
-                } else {
-                    movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
-                }
-                var item = page.appendItem(movieurl, "video", {
-                    title: title,
-                    icon: posterPath
-                });
-                var type = "movie";
-                item.addOptAction('Add \'' + title + '\' to Your Library', (function(title, type, imdbid) {
-                    return function() {
-                        addToLibrary(title, type, imdbid);
-                    };
-                })(title, type, imdbid));
-                item.addOptAction('Remove \'' + title + '\' from My Favorites', (function(title) {
-                    return function() {
-                        removeFromLibrary(title);
-                    };
-                })(title));
-            });
-        }
-        if (tvShows.length > 0) {
-            page.appendItem("", "separator", { title: "  Shows                                                                                                                                                                                                                                                               " });
-            page.appendItem("", "separator", { title: "" });
-            tvShows.forEach(function (item) {
-                var title = (item.name);
-                var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : fallbackImage;
-                var item = page.appendItem(plugin.id + ":season:" + (title), "video", {
-                    title: (title),
-                    icon: posterPath,
-                });
-                var type = "show";
-                item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type) {
-                    return function() {
-                        var list = JSON.parse(library.list);
-                        if (isFavorite(title)) {
-                            popup.notify('\'' + decodeURIComponent(title) + '\' is already in Your Library.', 3);
-                        } else {
-                            popup.notify('\'' + decodeURIComponent(title) + '\' has been added to Your Library.', 3);
-                            var libraryItem = {
-                                title: encodeURIComponent(title),
-                                type: type
-                            };
-                            list.push(libraryItem);
-                            library.list = JSON.stringify(list);
-                        }
-                    };
-                })(title, type));
-                item.addOptAction('Remove \'' + decodeURIComponent(title) + '\' from Your Library', (function(title, type) {
-                    return function() {
-                        var list = JSON.parse(library.list);
-                        if (title) {
-                            var decodedTitle = decodeURIComponent(title);
-                            var initialLength = list.length;
-                            list = list.filter(function(fav) {
-                                return fav.title !== encodeURIComponent(decodedTitle);
-                            });
-                            if (list.length < initialLength) {
-                                popup.notify('\'' + decodeURIComponent(decodedTitle) + '\' has been removed from Your Library.', 3);
-                            } else {
-                                popup.notify('Content not found in Your Library.', 3);
-                            }
-                            library.list = JSON.stringify(list);
-                        } else {
-                        popup.notify('Content not found in Your Library.', 3);
-                        }
-                    };
-                })(title, type));
-                item.richMetadata = {
-                    channel: "Channel Name",
-                };
-            });
-        }
-    } else {
-        page.error("No results found");
-    }
-    page.loading = false;
-}
+
 function iprotM3UParser(page, pl, specifiedGroup, limit) {
     var m3uItems = [];
     var groups = [];
@@ -400,28 +296,12 @@ function iprotM3UParser(page, pl, specifiedGroup, limit) {
     var title = page.metadata.title + '';
     page.loading = true;
 
-    function isPlaylist(pl) {
-        pl = unescape(pl).toUpperCase();
-        var extension = pl.split('.').pop();
-        var lastPart = pl.split('/').pop();
-        if (pl.substr(0, 4) === 'XML:') {
-            return 'xml';
-        }
-        if (pl.substr(0, 4) === 'M3U:' || (extension === 'M3U' && pl.substr(0, 4) !== 'HLS:') || lastPart === 'PLAYLIST' ||
-            pl.match(/TYPE=M3U/) || pl.match(/BIT.DO/) || pl.match(/BIT.LY/) || pl.match(/GOO.GL/) ||
-            pl.match(/TINYURL.COM/) || pl.match(/RAW.GITHUB/)) {
-            return 'm3u';
-        }
-        return false;
-    }
-
     if (theLastList !== pl) {
         page.metadata.title = 'Loading Channels, please wait...';
         var m3u = http.request(decodeURIComponent(pl), {}).toString().split('\n');
         theLastList = pl;
 
-        var m3uUrl = '',
-            m3uTitle = '',
+        var m3uTitle = '',
             m3uImage = '',
             m3uGroup = '',
             m3uRegion = '',
@@ -514,7 +394,6 @@ function iprotM3UParser(page, pl, specifiedGroup, limit) {
                     }
 
                     m3uItems.push(item);
-                    m3uUrl = '';
                     m3uTitle = '';
                     m3uImage = '';
                     m3uEpgId = '';
@@ -530,101 +409,64 @@ function iprotM3UParser(page, pl, specifiedGroup, limit) {
         page.metadata.title = title;
     }
 
-    var num = 0;
-    for (var i = 0; i < m3uItems.length; i++) {
-        if (specifiedGroup && m3uItems[i].group !== specifiedGroup) {
+    return {
+        items: m3uItems,
+        groups: groups
+    };
+}
+
+function addChannels(page, items, specifiedGroup, limit) {
+    var num = 0; // Initialize num counter
+
+    for (var i = 0; i < items.length; i++) {
+        if (specifiedGroup && items[i].group !== specifiedGroup) {
             continue; // Skip items not matching specified group
         }
 
-        var extension = m3uItems[i].url.split('.').pop().toUpperCase();
-        if (isPlaylist(m3uItems[i].url) || (m3uItems[i].url === m3uItems[i].title)) {
-            var route = 'm3u:';
-            if (m3uItems[i].url.substr(0, 4) === 'xml:') {
-                m3uItems[i].url = m3uItems[i].url.replace('xml:', '');
-                route = 'xml:';
-            }
-            if (m3uItems[i].url.substr(0, 4) === 'm3u:') {
-                m3uItems[i].url = m3uItems[i].url.replace('m3u:', '');
-            }
-            var item = page.appendItem(route + encodeURIComponent(m3uItems[i].url) + ':' + encodeURIComponent(m3uItems[i].title), 'video', {
-                //title: m3uItems[i].title,
-            });
-            addOptionForAddingChannelToLibrary(item, m3uItems[i].link, m3uItems[i].title, m3uItems[i].icon);
-            num++;
-        } else {
-            var description = '';
-            if (m3uItems[i].region && m3uItems[i].epgid) {
-                description = getEpg(m3uItems[i].region, m3uItems[i].epgid);
-            }
-            addItem(page, m3uItems[i].url, m3uItems[i].title, m3uItems[i].logo, description, '', '', m3uItems[i].headers);
-            num++;
+        var description = '';
+        if (items[i].region && items[i].epgid) {
+            description = getEpg(items[i].region, items[i].epgid);
         }
 
-        page.metadata.title = 'Adding item ' + num + ' of ' + m3uItems.length;
+        addChannel(page, items[i].url, items[i].title, items[i].logo, description, '', '', items[i].headers);
+        num++; // Increment num for each added item
 
         // Check if limit is reached
         if (limit && num >= limit) {
             break;
         }
     }
-
-    page.metadata.title = title;
-    page.loading = false;
-
-    function addItem(page, url, title, icon, description, genre, epgForTitle, headers) {
-        if (!epgForTitle) epgForTitle = '';
-        var type = 'video';
-        var link = url.match(/([\s\S]*?):(.*)/);
-        var linkUrl = 0;
-        var playlistType = isPlaylist(url);
-        if (link && playlistType) {
-            link = linkUrl = playlistType + ':' + encodeURIComponent(url) + ':' + escape(title);
-            type = 'directory';
-        } else if (link && !link[1].toUpperCase().match(/HTTP/) && !link[1].toUpperCase().match(/RTMP/)) {
-            link = linkUrl = plugin.id + ':' + url + ':' + escape(title);
-        } else {
-            linkUrl = url.toUpperCase().match(/M3U8/) || url.toUpperCase().match(/\.SMIL/) ? 'hls:' + url : url;
-            link = 'videoparams:' + JSON.stringify({
-                //title: title,
-                icon: icon ? icon : void(0),
-                sources: [{
-                    url: linkUrl,
-                }],
-                no_fs_scan: true,
-                no_subtitle_scan: true,
-            });
-        }
-
-        // get icon from description
-        if (!icon && description) {
-            icon = description.match(/img src="([\s\S]*?)"/);
-            if (icon) icon = icon[1];
-        }
-
-        if (!linkUrl) {
-            var item = page.appendPassiveItem(type, '', {
-                //title: title + epgForTitle,
-                icon: icon ? icon : null,
-                genre: genre,
-                description: description,
-            });
-            addOptionForAddingChannelToLibrary(item, link, title, icon);
-        } else {
-            var item = page.appendItem(link, 'video', {
-                //title: title + epgForTitle,
-                icon: icon ? icon : null,
-                genre: genre,
-                description: description,
-                headers: headers,
-            });
-            addOptionForAddingChannelToLibrary(item, link, title, icon);
-        }
-    }
 }
 
+function addChannel(page, url, title, icon, description, genre, epgForTitle, headers) {
+    if (!epgForTitle) epgForTitle = '';
+    var type = 'video';
+    var linkUrl = url.toUpperCase().match(/M3U8/) || url.toUpperCase().match(/\.SMIL/) ? 'hls:' + url : url;
+    var link = 'videoparams:' + JSON.stringify({
+        // title: title,
+        icon: icon ? icon : void(0),
+        sources: [{
+            url: linkUrl,
+        }],
+        no_fs_scan: true,
+        no_subtitle_scan: true,
+    });
 
+    // get icon from description
+    if (!icon && description) {
+        icon = description.match(/img src="([\s\S]*?)"/);
+        if (icon) icon = icon[1];
+    }
 
-
+    var item = page.appendItem(link, 'video', {
+        // title: title + epgForTitle,
+        icon: icon ? icon : null,
+        genre: genre,
+        description: description,
+        headers: headers,
+    });
+    addOptionForAddingChannelToLibrary(item, link, title, icon);
+}
 
 
 /*|---------------------------------------------------------------------------------------- Establish Pages ----------------------------------------------------------------------------------------|*/
@@ -648,348 +490,11 @@ new page.Route(plugin.id + ":channels", function(page) {
     page.appendItem(plugin.id + ":watchhistory", 'video', {
         icon: Plugin.path + "off.png",
     });
-
-    if (service.selectRegion == "Off") {
-        page.appendItem('', 'separator', {title: ''});
-        page.appendItem('', 'separator', {title: 'Select a region in settings to watch channels.'});
-    }
-
-
-    if (service.selectRegion == "United States") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:United States:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'United States';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:USA:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'USA';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3u:https%3A%2F%2Fwww.apsattv.com%2Fredbox.m3u:Redbox', 'video', { icon: 'https://mma.prnewswire.com/media/858885/redbox_logo.jpg?p=facebook', });
-        var pl = 'https%3A%2F%2Fwww.apsattv.com%2Fredbox.m3u';
-        var specifiedGroup = '';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3u:https%3A%2F%2Fi.mjh.nz%2FStirr%2Fall.m3u8:Stirr', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJYuYw7jJU6Jkiuj9Xc6v8sYI20wZQPpy1fYKgTYclsOJNWqXMdqpBzGjXfbxtvVm_iOI&usqp=CAU', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FStirr%2Fall.m3u8';
-        var specifiedGroup = '';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_usa.m3u8:USA:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_usa.m3u8';
-        var specifiedGroup = 'USA';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-    }
-
-    if (service.selectRegion == "United Kingdom") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:United Kingdom:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'United Kingdom';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Great Britain:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Great Britain';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fwww.apsattv.com%2Frakuten-uk.m3u:RakutenTV UK:Rakuten TV', 'video', { icon: 'https://cdn6.aptoide.com/imgs/4/0/e/40e4024425d9c9e0b311766303df3ef5_fgraphic.png', });
-        var pl = 'https%3A%2F%2Fwww.apsattv.com%2Frakuten-uk.m3u';
-        var specifiedGroup = 'RakutenTV UK';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_uk.m3u8:UK:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_uk.m3u8';
-        var specifiedGroup = 'UK';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "France") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:France:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'France';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:France:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'France';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_france.m3u8:France:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_france.m3u8';
-        var specifiedGroup = 'France';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Canada") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Canada:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'Canada';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Canada:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Canada';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_canada.m3u8:Canada:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_canada.m3u8';
-        var specifiedGroup = 'Canada';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Brazil") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Brazil:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Brazil';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_brazil.m3u8:Brazil:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_brazil.m3u8';
-        var specifiedGroup = 'Brazil';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "South Korea") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_south korea.m3u8:South Korea:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_south_korea.m3u8';
-        var specifiedGroup = 'South Korea';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_south korea.m3u8:South Korea:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_south_korea.m3u8';
-        var specifiedGroup = 'South Korea';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Mexico") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Mexico:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Mexico';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_mexico.m3u8:Mexico:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_mexico.m3u8';
-        var specifiedGroup = 'Mexico';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Chile") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Chile:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Chile';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_chile.m3u8:Chile:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_chile.m3u8';
-        var specifiedGroup = 'Chile';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Germany") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Germany:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Germany';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_germany.m3u8:Germany:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_germany.m3u8';
-        var specifiedGroup = 'Germany';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Switzerland") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_switzerland.m3u8:Switzerland:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_switzerland.m3u8';
-        var specifiedGroup = 'Switzerland';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_switzerland.m3u8:Switzerland:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_switzerland.m3u8';
-        var specifiedGroup = 'Switzerland';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Denmark") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Denmark:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Denmark';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_denmark.m3u8:Denmark:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_denmark.m3u8';
-        var specifiedGroup = 'Denmark';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Sweden") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Sweden:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Sweden';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_sweden.m3u8:Sweden:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_sweden.m3u8';
-        var specifiedGroup = 'Sweden';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Spain") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Spain:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'Spain';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Spain:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Spain';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_Spain.m3u8:Spain:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_spain.m3u8';
-        var specifiedGroup = 'Spain';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Austria") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Austria:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'Austria';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_austria.m3u8:Austria:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_austria.m3u8';
-        var specifiedGroup = 'Austria';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Italy") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Italy:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'Italy';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Italy:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Italy';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_Italy.m3u8:Italy:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_italy.m3u8';
-        var specifiedGroup = 'Italy';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "India") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:India:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
-        var specifiedGroup = 'India';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:India:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'India';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_India.m3u8:India:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_india.m3u8';
-        var specifiedGroup = 'India';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
-    if (service.selectRegion == "Norway") {
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Norway:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
-        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
-        var specifiedGroup = 'Norway';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_norway.m3u8:Norway:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
-        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_norway.m3u8';
-        var specifiedGroup = 'Norway';
-        var limit = '4';
-        iprotM3UParser(page, pl, specifiedGroup, limit);
-
-    }
-
+    page.loading = true;
+    channels.addChannels(page);
     page.loading = false;
-
-
 });
+
 new page.Route(plugin.id + ":library", function(page) {
     setPageHeader(page, "Your Library");
     page.model.contents = 'grid';
@@ -1011,6 +516,7 @@ new page.Route(plugin.id + ":library", function(page) {
     start.library(page);
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":trendingshows", function(page) {
     setPageHeader(page, "Popular Shows");
     page.model.contents = 'grid';
@@ -1032,6 +538,7 @@ new page.Route(plugin.id + ":trendingshows", function(page) {
     start.trendingshows(page);
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":trendingmovies", function(page) {
     setPageHeader(page, "Popular Movies");
     page.model.contents = 'grid';
@@ -1053,6 +560,7 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
     start.trendingmovies(page);
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
@@ -1072,12 +580,13 @@ new page.Route(plugin.id + ":start", function(page) {
         icon: Plugin.path + "off.png",
     });
     popup.notify('Streamian | Raise Your BitTorrent Cache and #KeepTorrentsAlive | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch it here!', 10);
-    newstart.start(page);
+    ondemand.ondemand(page);
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":search", function(page, query) {
     page.model.contents = 'grid';
-    setPageHeader(page, "Search for Shows & Movies!");
+    setPageHeader(page, "searchSearch for Shows, Movies & Channels!");
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -1094,13 +603,14 @@ new page.Route(plugin.id + ":search", function(page, query) {
         icon: Plugin.path + "off.png",
     });
     page.appendItem('', 'separator', { title: '', });
-    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows & Movies...' });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'searchSearch for Shows, Movies & Channels...' });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":search", "video", {
         icon: Plugin.path + "refresh.png"
     });
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
@@ -1118,10 +628,13 @@ new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
         icon: Plugin.path + "off.png",
     });
     page.appendItem('', 'separator', { title: '', });
-    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows & Movies...' });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'searchSearch for Shows, Movies & Channels...' });
     page.appendItem('', 'separator', { title: '', });
-    searchOnTmdb(page, query);
+    page.loading = true;
+    search.search(page, query);
+    page.loading = false;
 });
+
 new page.Route(plugin.id + ":season:(.*)", function(page, title) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'grid';
@@ -1155,6 +668,7 @@ new page.Route(plugin.id + ":season:(.*)", function(page, title) {
     }
     page.loading = false;
 });
+
 new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, seasonNumber) {
     var headerTitle;
     if (seasonNumber === '0') {
@@ -1237,8 +751,55 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
     }
     page.loading = false;
 });
+
+new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, specifiedGroup, title) {
+    setPageHeader(page, title);
+    page.model.contents = 'grid';
+    // Append your menu items here...
+
+    var parsedData = iprotM3UParser(page, pl, specifiedGroup);
+    var items = parsedData.items;
+
+    items.forEach(function(item) {
+        addChannels(page, [item], specifiedGroup); // Use addChannels to add each item
+    });
+
+    popup.notify("Right Click / Hold to add to Library.", 5);
+    page.loading = false;
+});
+
+new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
+    setPageHeader(page, unescape(title));
+    page.model.contents = 'grid';
+    // Append your menu items here...
+
+    var parsedData = iprotM3UParser(page, pl);
+    var items = parsedData.items;
+
+    items.forEach(function(item) {
+        addChannels(page, [item]); // Use addChannels to add each item
+    });
+
+    popup.notify("Right Click / Hold to add to Library.", 5);
+    page.loading = false;
+});
+
 new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
     popup.notify('Streamian | Encountering issues? Please report to Reddit r/movian', 10);
+
+    var timer; // Declare the timer variable in the outer scope
+
+    function clearTimer() {
+        if (timer) {
+            clearInterval(timer);
+            timer = null;
+        }
+    }
+
+    page.onUnload = function() {
+        clearTimer(); // Clear the timer when the page is unloaded
+    };
+
     if (service.autoPlay) {
         var countdown = 3;
         setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
@@ -1246,20 +807,22 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
             title: "Cancel",
             icon: Plugin.path + "cancel.png",
         });
-        var timer = setInterval(function() {
+
+        timer = setInterval(function() {
             countdown--;
             setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
             if (countdown <= 0) {
-                clearInterval(timer);
-                setPageHeader(page, "Searching for best link, please wait..");
+                clearTimer(); // Clear the timer when it completes
+                setPageHeader(page, "Searching for best source, please wait..");
                 consultAddons(page, decodeURIComponent(title), imdbid);
             }
         }, 1000);
     } else {
-        setPageHeader(page, "Searching for best link..");
+        setPageHeader(page, "Searching for best source, please wait..");
         consultAddons(page, decodeURIComponent(title), imdbid);
     }
 });
+
 new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'list';
@@ -1267,50 +830,5 @@ new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
         title: "Play",
         icon: Plugin.path + "play.png",
     });
-    page.loading = false;
-});
-new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, groupID, title) {
-    setPageHeader(page, title);
-    page.model.contents = 'grid';
-    page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
-    });
-    page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_on.png",
-    });
-    page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
-    });
-    page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
-    });
-    page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
-    });
-    iprotM3UParser(page, pl, groupID);
-    popup.notify("Right Click / Hold to add to Library.", 5);
-    page.loading = false;
-});
-new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
-    setPageHeader(page, unescape(title));
-    page.loading = true;
-    page.model.contents = 'grid';
-    page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
-    });
-    page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_on.png",
-    });
-    page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
-    });
-    page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
-    });
-    page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
-    });
-    iprotM3UParser(page, pl);
-    popup.notify("Right Click / Hold to add to Library.", 5);
     page.loading = false;
 });
