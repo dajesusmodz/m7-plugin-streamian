@@ -787,11 +787,23 @@ new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
 new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
     popup.notify('Streamian | Encountering issues? Please report to Reddit r/movian', 10);
 
+    var countdown = 3;
     var timer; // Declare the timer variable in the outer scope
+
+    function updateCountdown() {
+        if (countdown > 0) {
+            setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
+            countdown--;
+            timer = setTimeout(updateCountdown, 1000);
+        } else {
+            setPageHeader(page, "Searching for best source, please wait..");
+            consultAddons(page, decodeURIComponent(title), imdbid);
+        }
+    }
 
     function clearTimer() {
         if (timer) {
-            clearInterval(timer);
+            clearTimeout(timer);
             timer = null;
         }
     }
@@ -800,27 +812,20 @@ new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
         clearTimer(); // Clear the timer when the page is unloaded
     };
 
-    if (service.autoPlay) {
-        var countdown = 3;
-        setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
-        page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
-            title: "Cancel",
-            icon: Plugin.path + "cancel.png",
-        });
+    page.metadata.backgroundTimerRunning = true;
+    setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
+    page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
+        title: "Cancel",
+        icon: Plugin.path + "cancel.png",
+    });
 
-        timer = setInterval(function() {
-            countdown--;
-            setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
-            if (countdown <= 0) {
-                clearTimer(); // Clear the timer when it completes
-                setPageHeader(page, "Searching for best source, please wait..");
-                consultAddons(page, decodeURIComponent(title), imdbid);
-            }
-        }, 1000);
-    } else {
-        setPageHeader(page, "Searching for best source, please wait..");
-        consultAddons(page, decodeURIComponent(title), imdbid);
-    }
+    updateCountdown();
+    
+
+    page.onClose = function() {
+        page.metadata.backgroundTimerRunning = false;
+        clearTimer(); // Clear the timer when the page is closed
+    };
 });
 
 new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
