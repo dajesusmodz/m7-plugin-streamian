@@ -1,7 +1,7 @@
 // Search Module for Streamian | M7 / Movian Media Center
 // Version: 1.0
 // Author: F0R3V3R50F7
-exports.addChannels = function (page, query) {
+exports.search = function (page, query) {
     page.model.contents = 'grid';
     setPageHeader(page, query);
     var apiKey = "a0d71cffe2d6693d462af9e4f336bc06";
@@ -130,10 +130,9 @@ exports.addChannels = function (page, query) {
             });
         }
     }
-    
-    // Always search for channels regardless of TMDB results
+
     if (service.selectRegion == "United States") {
-        var channelsFound = false; // Flag to check if channels are found
+        var channelsFound = false;
         
         var playlists = [
             { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'United States' },
@@ -143,7 +142,6 @@ exports.addChannels = function (page, query) {
             { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_usa.m3u8', specifiedGroup: 'USA' }
         ];
         
-        // Iterate through playlists and add matching channels
         playlists.forEach(function(playlist) {
             var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
             var items = parsedData.items;
@@ -155,7 +153,6 @@ exports.addChannels = function (page, query) {
             });
         });
         
-        // Add channels separator and items only if channels are found
         if (channelsFound) {
             page.appendItem("", "separator", { title: "Channels" });
             page.appendItem("", "separator", { title: "" });
@@ -172,8 +169,560 @@ exports.addChannels = function (page, query) {
             });
         }
     }
+
+    if (service.selectRegion == "United Kingdom") {
+        var channelsFound = false;
     
-    // If no TMDB results and no channels are found, display no results message
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'United Kingdom' },
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Great Britain' },
+            { title: 'Rakuten TV', url: 'https://www.apsattv.com/rakuten-uk.m3u', specifiedGroup: 'RakutenTV UK' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_uk.m3u8', specifiedGroup: 'UK' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "France") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'France' },
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'France' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_france.m3u8', specifiedGroup: 'France' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Canada") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'Canada' },
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Canada' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_canada.m3u8', specifiedGroup: 'Canada' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Brazil") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Brazil' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_brazil.m3u8', specifiedGroup: 'Brazil' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "South Korea") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'South Korea' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_south_korea.m3u8', specifiedGroup: 'South Korea' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Mexico") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Mexico' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_mexico.m3u8', specifiedGroup: 'Mexico' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Chile") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Chile' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_chile.m3u8', specifiedGroup: 'Chile' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Germany") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Germany' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_germany.m3u8', specifiedGroup: 'Germany' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Switzerland") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'Switzerland' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_switzerland.m3u8', specifiedGroup: 'Switzerland' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Denmark") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Denmark' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_denmark.m3u8', specifiedGroup: 'Denmark' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Sweden") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Sweden' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_sweden.m3u8', specifiedGroup: 'Sweden' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Spain") {
+        var channelsFound = false;
+    
+        var playlists = [
+            { title: 'Samsung TV Plus', url: 'https://i.mjh.nz/SamsungTVPlus/all.m3u8', specifiedGroup: 'Spain' },
+            { title: 'Pluto TV', url: 'https://i.mjh.nz/PlutoTV/all.m3u8', specifiedGroup: 'Spain' },
+            { title: 'Over-The-Air', url: 'https://raw.githubusercontent.com/Free-TV/IPTV/master/playlists/playlist_spain.m3u8', specifiedGroup: 'Spain' }
+        ];
+    
+        playlists.forEach(function(playlist) {
+            var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+            var items = parsedData.items;
+    
+            items.forEach(function(item) {
+                if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                    channelsFound = true; // Set flag to true if channels are found
+                }
+            });
+        });
+    
+        if (channelsFound) {
+            page.appendItem("", "separator", { title: "Channels" });
+            page.appendItem("", "separator", { title: "" });
+    
+            playlists.forEach(function(playlist) {
+                var parsedData = iprotM3UParser(page, playlist.url, playlist.specifiedGroup);
+                var items = parsedData.items;
+    
+                items.forEach(function(item) {
+                    if (item.title.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                        addChannels(page, [item], playlist.specifiedGroup);
+                    }
+                });
+            });
+        }
+    }
+
+    if (service.selectRegion == "Austria") {
+
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Austria:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
+        var specifiedGroup = 'Austria';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_austria.m3u8:Austria:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
+        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_austria.m3u8';
+        var specifiedGroup = 'Austria';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+    }
+    
+    if (service.selectRegion == "Italy") {
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:Italy:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
+        var specifiedGroup = 'Italy';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Italy:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
+        var specifiedGroup = 'Italy';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_Italy.m3u8:Italy:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
+        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_italy.m3u8';
+        var specifiedGroup = 'Italy';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+    }
+    
+    if (service.selectRegion == "India") {
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8:India:Samsung TV Plus', 'video', { icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTRoCZ8qaWdvSKWo5MoYQM10z02ta6IO_-U9_JT2cBVxBaIps5m', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FSamsungTVPlus%2Fall.m3u8';
+        var specifiedGroup = 'India';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:India:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
+        var specifiedGroup = 'India';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_India.m3u8:India:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
+        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_india.m3u8';
+        var specifiedGroup = 'India';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+    }
+    
+    if (service.selectRegion == "Norway") {
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8:Norway:Pluto TV', 'video', { icon: 'https://images.pluto.tv/channels/5e793a7cfbdf780007f7eb75/colorLogoPNG.png', });
+        var pl = 'https%3A%2F%2Fi.mjh.nz%2FPlutoTV%2Fall.m3u8';
+        var specifiedGroup = 'Norway';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+        page.appendItem('m3uGroup:https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_norway.m3u8:Norway:Over-The-Air', 'video', { icon: 'https://myriadrf.org/app/uploads/2017/04/ota-banner-central.jpg', });
+        var pl = 'https%3A%2F%2Fraw.githubusercontent.com%2FFree-TV%2FIPTV%2Fmaster%2Fplaylists%2Fplaylist_norway.m3u8';
+        var specifiedGroup = 'Norway';
+        var limit = '4';
+        var parsedData = iprotM3UParser(page, pl, specifiedGroup, limit);
+        var items = parsedData.items;
+        items.forEach(function(item) {
+            addChannels(page, [item], specifiedGroup, limit); // Use addChannels to add each item
+        });
+    
+    }    
+
     if (!tmdbResultsFound && !channelsFound) {
         setPageHeader(page, 'No results found for ' + query);
     }

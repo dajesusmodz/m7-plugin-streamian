@@ -586,7 +586,7 @@ new page.Route(plugin.id + ":start", function(page) {
 
 new page.Route(plugin.id + ":search", function(page, query) {
     page.model.contents = 'grid';
-    setPageHeader(page, "searchSearch for Shows, Movies & Channels!");
+    setPageHeader(page, "Search for Shows, Movies & Channels!");
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -603,7 +603,7 @@ new page.Route(plugin.id + ":search", function(page, query) {
         icon: Plugin.path + "off.png",
     });
     page.appendItem('', 'separator', { title: '', });
-    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'searchSearch for Shows, Movies & Channels...' });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows, Movies & Channels...' });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":search", "video", {
         icon: Plugin.path + "refresh.png"
