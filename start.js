@@ -152,7 +152,7 @@ exports.library = function (page) {
     for (var i in list) {
       var itemmd = JSON.parse(list[i]);
       var item = page.appendItem(decodeURIComponent(itemmd.link), 'video', {
-        title: decodeURIComponent(itemmd.title),
+        //title: decodeURIComponent(itemmd.title),
         icon: itemmd.icon ? decodeURIComponent(itemmd.icon) : null,
         description: 'Link: ' + decodeURIComponent(itemmd.link),
       });

@@ -1,6 +1,6 @@
                                                                         /*| Streamian for Movian/M7 Media Center | 2024 F0R3V3R50F7 |*/
 
-/*|---------------------------------------------------------------------------------------- Pre - Requisits ----------------------------------------------------------------------------------------|*/
+/*|---------------------------------------------------------------------------------------- Establish Pre - Requisits / Services ----------------------------------------------------------------------------------------|*/
 
 
 var page = require('movian/page');
@@ -23,6 +23,7 @@ var channels = require('channels');
 var search = require('search');
 var library = store.create('library');
 var otalibrary = store.create('otalibrary');
+var currentCancellationToken = null;
 
 
 /*|---------------------------------------------------------------------------------------- Establish Services ----------------------------------------------------------------------------------------|*/
@@ -79,6 +80,18 @@ settings.createMultiOpt('searchTime', 'Minimum Video Source Search Time', [
 
 
 /*|---------------------------------------------------------------------------------------- Establish Global Functions ----------------------------------------------------------------------------------------|*/
+
+
+function createCancellationToken() {
+    return { cancelled: false };
+}
+
+// Function to cancel the current operation
+function cancelCurrentOperation() {
+    if (currentCancellationToken) {
+        currentCancellationToken.cancelled = true;
+    }
+}
 
 function addOptionForAddingChannelToLibrary(item, link, title, icon) {
     item.addOptAction('Add \'' + title + '\' to Your Library', function() {
@@ -145,136 +158,198 @@ function removeFromLibrary(title) {
 }
 
 function consultAddons(page, title, imdbid) {
+    // Cancel any currently running instance
+    cancelCurrentOperation();
+
+    // Create a new cancellation token for this instance
+    currentCancellationToken = createCancellationToken();
+    const cancellationToken = currentCancellationToken;
+
     page.loading = true;
     page.model.contents = 'list';
-    var ytsResults = yts.search(page, title) || [];
-    var ottsxResults = ottsx.search(page, title) || [];
-    var internetArchiveResults = internetarchive.search(page, title) || [];
-    var eztvResults = eztv.search(page, title) || [];
 
-    // Function to check if the result has more than 0 seeders
-    function hasSeeders(result) {
-        var parts = result.split(" - ");
-        var seederCount = parseInt(parts[2]) || 0;
-        return seederCount > 0;
+    // Function cleanup to reset the global variable
+    function cleanup() {
+        page.loading = false;
+        currentCancellationToken = null;
     }
 
-    ytsResults = ytsResults.filter(hasSeeders).map(function(result) {
-        return result + " - Yify";
-    });
-    ottsxResults = ottsxResults.filter(hasSeeders).map(function(result) {
-        return result + " - 1337x";
-    });
-    internetArchiveResults = internetArchiveResults.filter(hasSeeders).map(function(result) {
-        return result + " - Archive.org";
-    });
-    eztvResults = eztvResults.filter(hasSeeders).map(function(result) {
-        return result + " - EZTV";
-    });
+    // Check if the operation has been cancelled
+    function checkCancellation() {
+        if (cancellationToken.cancelled) {
+            cleanup();
+            throw new Error('Operation cancelled');
+        }
+    }
 
-    var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults).concat(eztvResults);
+    try {
+        var ytsResults = yts.search(page, title) || [];
+        checkCancellation();
+        var ottsxResults = ottsx.search(page, title) || [];
+        checkCancellation();
+        var internetArchiveResults = internetarchive.search(page, title) || [];
+        checkCancellation();
+        var eztvResults = eztv.search(page, title) || [];
+        checkCancellation();
 
-    function processResults() {
-        var preferredQualityRegex;
-        if (service.selectQuality === "UltraHD") {
-            preferredQualityRegex = /2160p/i;
-        } else if (service.selectQuality === "FullHD") {
-            preferredQualityRegex = /1080p/i;
-        } else if (service.selectQuality === "HD") {
-            preferredQualityRegex = /720p/i;
-        } else if (service.selectQuality === "SD") {
-            preferredQualityRegex = /480p|360p/i;
+        // Function to check if the result has more than 0 seeders
+        function hasSeeders(result) {
+            checkCancellation();
+            var parts = result.split(" - ");
+            var seederCount = parseInt(parts[2]) || 0;
+            return seederCount > 0;
         }
 
-        var preferredResults = combinedResults.filter(function(item) {
-            var parts = item.split(" - ");
-            var videoQuality = parts[1];
-            return preferredQualityRegex.test(videoQuality);
+        ytsResults = ytsResults.filter(hasSeeders).map(function(result) {
+            checkCancellation();
+            return result + " - Yify";
         });
+        checkCancellation();
+        ottsxResults = ottsxResults.filter(hasSeeders).map(function(result) {
+            checkCancellation();
+            return result + " - 1337x";
+        });
+        checkCancellation();
+        internetArchiveResults = internetArchiveResults.filter(hasSeeders).map(function(result) {
+            checkCancellation();
+            return result + " - Archive.org";
+        });
+        checkCancellation();
+        eztvResults = eztvResults.filter(hasSeeders).map(function(result) {
+            checkCancellation();
+            return result + " - EZTV";
+        });
+        checkCancellation();
 
-        var selectedResult;
-        var maxPreferredSeeders = 0;
+        var combinedResults = ytsResults.concat(ottsxResults).concat(internetArchiveResults).concat(eztvResults);
+        checkCancellation();
 
-        if (preferredResults.length > 0) {
-            preferredResults.forEach(function(item) {
-                var seederCount = parseInt(item.split(" - ")[2]) || 0;
-                if (seederCount > maxPreferredSeeders) {
-                    maxPreferredSeeders = seederCount;
-                    selectedResult = item;
-                }
+        function processResults() {
+            checkCancellation();
+
+            var preferredQualityRegex;
+            if (service.selectQuality === "UltraHD") {
+                preferredQualityRegex = /2160p/i;
+            } else if (service.selectQuality === "FullHD") {
+                preferredQualityRegex = /1080p/i;
+            } else if (service.selectQuality === "HD") {
+                preferredQualityRegex = /720p/i;
+            } else if (service.selectQuality === "SD") {
+                preferredQualityRegex = /480p|360p/i;
+            }
+            checkCancellation();
+
+            var preferredResults = combinedResults.filter(function(item) {
+                checkCancellation();
+                var parts = item.split(" - ");
+                var videoQuality = parts[1];
+                return preferredQualityRegex.test(videoQuality);
             });
+            checkCancellation();
 
-            if (maxPreferredSeeders < 30) {
-                combinedResults.forEach(function(item) {
+            var selectedResult;
+            var maxPreferredSeeders = 0;
+            checkCancellation();
+
+            if (preferredResults.length > 0) {
+                preferredResults.forEach(function(item) {
+                    checkCancellation();
                     var seederCount = parseInt(item.split(" - ")[2]) || 0;
                     if (seederCount > maxPreferredSeeders) {
                         maxPreferredSeeders = seederCount;
                         selectedResult = item;
                     }
                 });
+                checkCancellation();
+
+                if (maxPreferredSeeders < 30) {
+                    combinedResults.forEach(function(item) {
+                        checkCancellation();
+                        var seederCount = parseInt(item.split(" - ")[2]) || 0;
+                        if (seederCount > maxPreferredSeeders) {
+                            maxPreferredSeeders = seederCount;
+                            selectedResult = item;
+                        }
+                    });
+                    checkCancellation();
+
+                    if (selectedResult) {
+                        popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+                    }
+                }
+            } else {
+                combinedResults.forEach(function(item) {
+                    checkCancellation();
+                    var seederCount = parseInt(item.split(" - ")[2]) || 0;
+                    if (seederCount > maxPreferredSeeders) {
+                        maxPreferredSeeders = seederCount;
+                        selectedResult = item;
+                    }
+                });
+                checkCancellation();
+
                 if (selectedResult) {
                     popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
                 }
             }
-        } else {
-            combinedResults.forEach(function(item) {
-                var seederCount = parseInt(item.split(" - ")[2]) || 0;
-                if (seederCount > maxPreferredSeeders) {
-                    maxPreferredSeeders = seederCount;
-                    selectedResult = item;
-                }
-            });
+            checkCancellation();
+
             if (selectedResult) {
-                popup.notify("Streamian | Couldn't find a source in preferred quality, playing best source found.", 10);
+                var parts = selectedResult.split(" - ");
+                var magnetLink = parts[0];
+                var videoQuality = parts[1];
+                var seederCount = parts[2];
+                var source = parts[3];
+                var vparams;
+                checkCancellation();
+
+                if (source === 'Archive.org') {
+                    popup.notify("Streamian | Streaming from " + source + " direct" + " at " + videoQuality, 10);
+                } else {
+                    popup.notify("Streamian | Streaming from " + source + " with " + seederCount + " seeders" + " at " + videoQuality, 10);
+                }
+                checkCancellation();
+
+                if (source === 'Archive.org') {
+                    vparams = "videoparams:" + JSON.stringify({
+                        title: title,
+                        canonicalUrl: magnetLink,
+                        no_fs_scan: true,
+                        sources: [{
+                            url: magnetLink
+                        }],
+                        imdbid: imdbid
+                    });
+                } else {
+                    vparams = "videoparams:" + JSON.stringify({
+                        title: title,
+                        canonicalUrl: "torrent://" + magnetLink,
+                        no_fs_scan: true,
+                        sources: [{
+                            url: "torrent:video:" + magnetLink
+                        }],
+                        imdbid: imdbid
+                    });
+                }
+                page.loading = false;
+                page.redirect(vparams);
+            } else {
+                var nostreamnotify = "No suitable streams found for " + title;
+                setPageHeader(page, nostreamnotify);
+                page.loading = false;
             }
+
+            // Reset the global variable as the function execution completes
+            cleanup();
         }
 
-        if (selectedResult) {
-            var parts = selectedResult.split(" - ");
-            var magnetLink = parts[0];
-            var videoQuality = parts[1];
-            var seederCount = parts[2];
-            var source = parts[3];
-            var vparams;
-
-            if (source === 'Archive.org') {
-                popup.notify("Streamian | Streaming from " + source + " direct" + " at " + videoQuality, 10);
-            } else {
-                popup.notify("Streamian | Streaming from " + source + " with " + seederCount + " seeders" + " at " + videoQuality, 10);
-            }
-
-            if (source === 'Archive.org') {
-                vparams = "videoparams:" + JSON.stringify({
-                    title: title,
-                    canonicalUrl: magnetLink,
-                    no_fs_scan: true,
-                    sources: [{
-                        url: magnetLink
-                    }],
-                    imdbid: imdbid
-                });
-            } else {
-                vparams = "videoparams:" + JSON.stringify({
-                    title: title,
-                    canonicalUrl: "torrent://" + magnetLink,
-                    no_fs_scan: true,
-                    sources: [{
-                        url: "torrent:video:" + magnetLink
-                    }],
-                    imdbid: imdbid
-                });
-            }
-            page.loading = false;
-            page.redirect(vparams);
-        } else {
-            var nostreamnotify = "No suitable streams found for " + title;
-            setPageHeader(page, nostreamnotify);
-            page.loading = false;
-        }
+        var searchTime = parseInt(service.searchTime) * 1000;
+        setTimeout(processResults, searchTime);
+    } catch (e) {
+        // Log any errors and reset the global variable
+        showtime.print("Error in consultAddons: " + e.message);
+        cleanup();
     }
-
-    var searchTime = parseInt(service.searchTime) * 1000;
-    setTimeout(processResults, searchTime);
 }
 
 function setPageHeader(page, title) {
@@ -475,6 +550,7 @@ function addChannel(page, url, title, icon, description, genre, epgForTitle, hea
 new page.Route(plugin.id + ":channels", function(page) {
     setPageHeader(page, "Channels");
     page.model.contents = 'grid';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -498,6 +574,7 @@ new page.Route(plugin.id + ":channels", function(page) {
 new page.Route(plugin.id + ":library", function(page) {
     setPageHeader(page, "Your Library");
     page.model.contents = 'grid';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -520,6 +597,7 @@ new page.Route(plugin.id + ":library", function(page) {
 new page.Route(plugin.id + ":trendingshows", function(page) {
     setPageHeader(page, "Popular Shows");
     page.model.contents = 'grid';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_on.png",
     });
@@ -542,6 +620,7 @@ new page.Route(plugin.id + ":trendingshows", function(page) {
 new page.Route(plugin.id + ":trendingmovies", function(page) {
     setPageHeader(page, "Popular Movies");
     page.model.contents = 'grid';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_on.png",
     });
@@ -564,6 +643,7 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, "Welcome");
     page.model.contents = 'grid';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_on.png",
     });
@@ -587,6 +667,7 @@ new page.Route(plugin.id + ":start", function(page) {
 new page.Route(plugin.id + ":search", function(page, query) {
     page.model.contents = 'grid';
     setPageHeader(page, "Search for Shows, Movies & Channels!");
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -612,6 +693,7 @@ new page.Route(plugin.id + ":search", function(page, query) {
 });
 
 new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
         icon: Plugin.path + "ondemand_off.png",
     });
@@ -628,7 +710,7 @@ new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
         icon: Plugin.path + "off.png",
     });
     page.appendItem('', 'separator', { title: '', });
-    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'searchSearch for Shows, Movies & Channels...' });
+    page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows, Movies & Channels...' });
     page.appendItem('', 'separator', { title: '', });
     page.loading = true;
     search.search(page, query);
@@ -638,6 +720,8 @@ new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
 new page.Route(plugin.id + ":season:(.*)", function(page, title) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'grid';
+    cancelCurrentOperation();
+
     var apiKey = "a0d71cffe2d6693d462af9e4f336bc06";
     var searchUrl = "https://api.themoviedb.org/3/search/tv?api_key=" + apiKey + "&query=" + encodeURIComponent(title);
     var searchResponse = http.request(searchUrl);
@@ -678,6 +762,8 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
         headerTitle = "Season " + seasonNumber + " Episodes";
     }
     setPageHeader(page, headerTitle);
+    cancelCurrentOperation();
+
     var apiKey = "a0d71cffe2d6693d462af9e4f336bc06";
     var episodesUrl = "https://api.themoviedb.org/3/tv/" + showId + "/season/" + seasonNumber + "?api_key=" + apiKey;
     var episodesResponse = http.request(episodesUrl);
@@ -755,7 +841,7 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
 new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, specifiedGroup, title) {
     setPageHeader(page, title);
     page.model.contents = 'grid';
-    // Append your menu items here...
+    cancelCurrentOperation();
 
     var parsedData = iprotM3UParser(page, pl, specifiedGroup);
     var items = parsedData.items;
@@ -771,7 +857,7 @@ new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, specifiedGroup, tit
 new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
     setPageHeader(page, unescape(title));
     page.model.contents = 'grid';
-    // Append your menu items here...
+    cancelCurrentOperation();
 
     var parsedData = iprotM3UParser(page, pl);
     var items = parsedData.items;
@@ -785,52 +871,21 @@ new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
 });
 
 new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
+    setPageHeader(page, "Searching for best source, please wait..");
+    page.model.contents = 'list';
     popup.notify('Streamian | Encountering issues? Please report to Reddit r/movian', 10);
-
-    var countdown = 3;
-    var timer; // Declare the timer variable in the outer scope
-
-    function updateCountdown() {
-        if (countdown > 0) {
-            setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
-            countdown--;
-            timer = setTimeout(updateCountdown, 1000);
-        } else {
-            setPageHeader(page, "Searching for best source, please wait..");
-            consultAddons(page, decodeURIComponent(title), imdbid);
-        }
-    }
-
-    function clearTimer() {
-        if (timer) {
-            clearTimeout(timer);
-            timer = null;
-        }
-    }
-
-    page.onUnload = function() {
-        clearTimer(); // Clear the timer when the page is unloaded
-    };
-
-    page.metadata.backgroundTimerRunning = true;
-    setPageHeader(page, "Autoplaying in " + countdown + " seconds...");
     page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
         title: "Cancel",
         icon: Plugin.path + "cancel.png",
     });
-
-    updateCountdown();
-    
-
-    page.onClose = function() {
-        page.metadata.backgroundTimerRunning = false;
-        clearTimer(); // Clear the timer when the page is closed
-    };
+    cancelCurrentOperation();
+    consultAddons(page, decodeURIComponent(title), imdbid);
 });
 
 new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'list';
+    cancelCurrentOperation();
     page.appendItem(plugin.id + ":play:" + title + ":" + imdbid, "video", {
         title: "Play",
         icon: Plugin.path + "play.png",
