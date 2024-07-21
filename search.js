@@ -8,7 +8,7 @@ exports.search = function (page, query) {
     var apiUrl = "https://api.themoviedb.org/3/search/multi?api_key=" + apiKey + "&query=" + encodeURIComponent(query);
     var response = http.request(apiUrl);
     var json = JSON.parse(response);
-    var fallbackImage = Plugin.path + "cvrntfnd.png";
+    var fallbackImage = Plugin.path + "images/cvrntfnd.png";
     
     var tmdbResultsFound = false; // Flag to check if TMDB results are found
     

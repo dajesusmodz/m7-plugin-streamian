@@ -3,12 +3,12 @@
 	"author": "F0R3V3R50F7 (M3U Parser by iprot)",
 	"homepage": "http://github.com/lprot/movian-plugin-streamian",
 	"title": "Streamian",
-	"synopsis": "One stop for TV Shows & Movies with Personal Library & Subtitle Plugin Support.",
-	"version": "2.9",
+	"synopsis": "One stop for Shows, Movies & Free-to-Air TV with Personal Library & Subtitle Plugin Support.",
+	"version": "3.0",
         "file": "streamian.js",
 	"m7Version": "7.0.0",
 	"type": "ecmascript",
 	"id": "streamian",
-	"icon": "logo.png",
+	"icon": "images/logo.png",
 	"category": "video"
 }

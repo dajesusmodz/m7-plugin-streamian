@@ -13,15 +13,17 @@ var popup = require('native/popup');
 var store = require('movian/store');
 var plugin = JSON.parse(Plugin.manifest);
 var logo = Plugin.path + plugin.icon;
-var yts = require('addons/ytsaddon');
-var ottsx = require('addons/ottsxaddon');
-var eztv = require('addons/eztvaddon');
-var internetarchive = require('addons/internetarchiveaddon');
+var yts = require('scrapers/ytsaddon');
+var ottsx = require('scrapers/ottsxaddon');
+var eztv = require('scrapers/eztvaddon');
+var internetarchive = require('scrapers/internetarchiveaddon');
 var start = require('start');
 var ondemand = require('ondemand');
 var channels = require('channels');
 var search = require('search');
 var library = store.create('library');
+var channelhistory = store.create('channelhistory');
+var ondemandhistory = store.create('ondemandhistory');
 var otalibrary = store.create('otalibrary');
 var currentCancellationToken = null;
 
@@ -31,6 +33,8 @@ var currentCancellationToken = null;
 
 if (!library.list) {library.list = JSON.stringify([]);}
 if (!otalibrary.list) {otalibrary.list = '[]';}
+if (!ondemandhistory.list) {ondemandhistory.list = '[]';}
+if (!channelhistory.list) {channelhistory.list = '[]';}
 service.create(plugin.title, plugin.id + ":start", 'video', true, logo);
 settings.globalSettings(plugin.id, plugin.title, logo, plugin.synopsis);
 settings.createBool('h265filter', 'Enable H.265 Filter (Enable on Playstation 3)', false, function(v) {
@@ -93,12 +97,34 @@ function cancelCurrentOperation() {
     }
 }
 
+function addItemToHistory(title, type, imdbid, icon, link) {
+    var list = JSON.parse(ondemandhistory.list);
+    var historyItem = {
+        title: encodeURIComponent(title),
+        type: type,
+        imdbid: imdbid,
+        icon: icon,
+        link: link
+    };
+    list.push(historyItem);
+    ondemandhistory.list = JSON.stringify(list);
+}
+
+function addChannelToHistory(page, link, title, icon) {
+    var entry = JSON.stringify({
+        link: link,
+        title: title,
+        icon: icon
+    });
+    channelhistory.list = JSON.stringify([entry].concat(eval(channelhistory.list)));
+}
+
 function addOptionForAddingChannelToLibrary(item, link, title, icon) {
     item.addOptAction('Add \'' + title + '\' to Your Library', function() {
       var entry = JSON.stringify({
         link: encodeURIComponent(link),
         title: encodeURIComponent(title),
-        icon: encodeURIComponent(icon),
+        icon: icon,
       });
       otalibrary.list = JSON.stringify([entry].concat(eval(otalibrary.list)));
       popup.notify('\'' + title + '\' has been added to Your Library.', 3);
@@ -356,7 +382,7 @@ function setPageHeader(page, title) {
     if (page.metadata) {
         page.metadata.title = title;
         page.metadata.icon = logo;
-        page.metadata.background = Plugin.path + "bg.png";
+        page.metadata.background = Plugin.path + "images/bg.png";
     }
     page.type = "directory";
     page.contents = "items";
@@ -533,7 +559,9 @@ function addChannel(page, url, title, icon, description, genre, epgForTitle, hea
         if (icon) icon = icon[1];
     }
 
-    var item = page.appendItem(link, 'video', {
+    var decodedIcon = decodeURIComponent(icon);
+
+    var item = page.appendItem(plugin.id + ":playchannel:" + link + ':' + title + ':' + decodedIcon, "video", {
         // title: title + epgForTitle,
         icon: icon ? icon : null,
         genre: genre,
@@ -552,19 +580,19 @@ new page.Route(plugin.id + ":channels", function(page) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_on.png",
+        icon: Plugin.path + "images/channels_on.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
+        icon: Plugin.path + "images/search_off.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     page.loading = true;
     channels.addChannels(page);
@@ -576,19 +604,19 @@ new page.Route(plugin.id + ":library", function(page) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
+        icon: Plugin.path + "images/search_off.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_on.png",
+        icon: Plugin.path + "images/library_on.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     start.library(page);
     page.loading = false;
@@ -599,19 +627,19 @@ new page.Route(plugin.id + ":trendingshows", function(page) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_on.png",
+        icon: Plugin.path + "images/ondemand_on.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
+        icon: Plugin.path + "images/search_off.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     start.trendingshows(page);
     page.loading = false;
@@ -622,19 +650,19 @@ new page.Route(plugin.id + ":trendingmovies", function(page) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_on.png",
+        icon: Plugin.path + "images/ondemand_on.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
+        icon: Plugin.path + "images/search_off.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     start.trendingmovies(page);
     page.loading = false;
@@ -645,19 +673,19 @@ new page.Route(plugin.id + ":start", function(page) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_on.png",
+        icon: Plugin.path + "images/ondemand_on.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_off.png",
+        icon: Plugin.path + "images/search_off.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     popup.notify('Streamian | Raise Your BitTorrent Cache and #KeepTorrentsAlive | Is your favourite Movie or Show not here? Add it to TMDB yourself and watch it here!', 10);
     ondemand.ondemand(page);
@@ -669,25 +697,25 @@ new page.Route(plugin.id + ":search", function(page, query) {
     setPageHeader(page, "Search for Shows, Movies & Channels!");
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_on.png",
+        icon: Plugin.path + "images/search_on.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows, Movies & Channels...' });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":search", "video", {
-        icon: Plugin.path + "refresh.png"
+        icon: Plugin.path + "images/refresh.png"
     });
     page.loading = false;
 });
@@ -695,19 +723,19 @@ new page.Route(plugin.id + ":search", function(page, query) {
 new page.Route(plugin.id + ":searchresults:(.*)", function(page, query) {
     cancelCurrentOperation();
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "ondemand_off.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "channels_off.png",
+        icon: Plugin.path + "images/channels_off.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
-        icon: Plugin.path + "search_on.png",
+        icon: Plugin.path + "images/search_on.png",
     });
     page.appendItem(plugin.id + ":library", 'video', {
-        icon: Plugin.path + "library_off.png",
+        icon: Plugin.path + "images/library_off.png",
     });
     page.appendItem(plugin.id + ":watchhistory", 'video', {
-        icon: Plugin.path + "off.png",
+        icon: Plugin.path + "images/history_off.png",
     });
     page.appendItem('', 'separator', { title: '', });
     page.appendItem(plugin.id + ":searchresults:", 'search', { title: 'Search for Shows, Movies & Channels...' });
@@ -721,6 +749,22 @@ new page.Route(plugin.id + ":season:(.*)", function(page, title) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'grid';
     cancelCurrentOperation();
+
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "images/ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":channels", 'video', {
+        icon: Plugin.path + "images/channels_off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "images/search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "images/library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "images/history_off.png",
+    });
 
     var apiKey = "a0d71cffe2d6693d462af9e4f336bc06";
     var searchUrl = "https://api.themoviedb.org/3/search/tv?api_key=" + apiKey + "&query=" + encodeURIComponent(title);
@@ -737,7 +781,7 @@ new page.Route(plugin.id + ":season:(.*)", function(page, title) {
         if (seasonsJson.seasons && seasonsJson.seasons.length > 0) {
             seasonsJson.seasons.forEach(function (season) {
                 var seasonTitle = season.name;
-                var posterPath = season.poster_path ? "https://image.tmdb.org/t/p/w500" + season.poster_path : Plugin.path + "cvrntfnd.png";
+                var posterPath = season.poster_path ? "https://image.tmdb.org/t/p/w500" + season.poster_path : Plugin.path + "images/cvrntfnd.png";
                 var seasonNumber = season.season_number;
                 page.appendItem(plugin.id + ":episodes:" + showId + ":" + seasonNumber, "video", {
                     title: seasonTitle,
@@ -778,27 +822,29 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
             var episodeNumber = episode.episode_number < 10 ? "0" + episode.episode_number : episode.episode_number;
             var cleanedSeasonNumber = seasonNumber < 10 ? "0" + seasonNumber : seasonNumber;
             var title = showTitle + " S" + cleanedSeasonNumber + "E" + episodeNumber;
-            var posterPath = episode.still_path ? "https://image.tmdb.org/t/p/w500" + episode.still_path : Plugin.path + "scrnshtntfnd.png";
+            var posterPath = episode.still_path ? "https://image.tmdb.org/t/p/w500" + episode.still_path : Plugin.path + "images/scrnshtntfnd.png";
             var episodeDetailsUrl = "https://api.themoviedb.org/3/tv/" + showId + "/season/" + seasonNumber + "/episode/" + episode.episode_number + "?api_key=" + apiKey + "&append_to_response=external_ids";
             var episodeDetailsResponse = http.request(episodeDetailsUrl);
             var episodeDetails = JSON.parse(episodeDetailsResponse);
             var imdbid = episodeDetails.external_ids ? episodeDetails.external_ids.imdb_id : '';
             var episodeurl;
+            var type = "episode";
+
             if (service.autoPlay) {
-                episodeurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
+                episodeurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid + ":" + type;
             } else {
-                episodeurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
+                episodeurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid + ":" + type;
             }
             var item = page.appendItem(episodeurl, "video", {
                 title: episodeNumber + "). " + episodeTitle,
                 icon: posterPath,
             });
-            var type = "episode";
+            
             item.addOptAction('Add \'' + title + '\' to Your Library', (function(title, type, imdbid) {
                 return function() {
                     var list = JSON.parse(library.list);
                     if (isFavorite(title)) {
-                        popup.notify('\'' + title + '\' is already in My Favorites.', 3);
+                        popup.notify('\'' + title + '\' is already in Your Library.', 3);
                     } else {
                         popup.notify('\'' + title + '\' has been added to Your Library.', 3);
                         var libraryItem = {
@@ -811,7 +857,7 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
                     }
                 };
             })(title, type, imdbid));
-            item.addOptAction('Remove \'' + title + '\' from My Favorites', (function(title, type) {
+            item.addOptAction('Remove \'' + title + '\' from Your Library', (function(title, type) {
                 return function() {
                     var list = JSON.parse(library.list);
                     if (title) {
@@ -823,11 +869,11 @@ new page.Route(plugin.id + ":episodes:(\\d+):(\\d+)", function(page, showId, sea
                         if (list.length < initialLength) {
                             popup.notify('\'' + decodedTitle + '\' has been removed from Your Library.', 3);
                         } else {
-                            popup.notify('Video not found in favorites.', 3);
+                            popup.notify('Video not found in Your Library.', 3);
                         }
                         library.list = JSON.stringify(list);
                     } else {
-                        popup.notify('Video not found in favorites.', 3);
+                        popup.notify('Video not found in Your Library.', 3);
                     }
                 };
             })(title, type));
@@ -842,6 +888,22 @@ new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, specifiedGroup, tit
     setPageHeader(page, title);
     page.model.contents = 'grid';
     cancelCurrentOperation();
+
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "images/ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":channels", 'video', {
+        icon: Plugin.path + "images/channels_off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "images/search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "images/library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "images/history_off.png",
+    });
 
     var parsedData = iprotM3UParser(page, pl, specifiedGroup);
     var items = parsedData.items;
@@ -859,6 +921,22 @@ new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
     page.model.contents = 'grid';
     cancelCurrentOperation();
 
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "images/ondemand_on.png",
+    });
+    page.appendItem(plugin.id + ":channels", 'video', {
+        icon: Plugin.path + "images/channels_off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "images/search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "images/library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "images/history_off.png",
+    });
+
     var parsedData = iprotM3UParser(page, pl);
     var items = parsedData.items;
 
@@ -870,25 +948,62 @@ new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
     page.loading = false;
 });
 
-new page.Route(plugin.id + ":play:(.*):(.*)", function(page, title, imdbid) {
+new page.Route(plugin.id + ":play:(.*):(.*):(.*)", function(page, title, imdbid, type) {
     setPageHeader(page, "Searching for best source, please wait..");
     page.model.contents = 'list';
+    title = decodeURIComponent(title);
     popup.notify('Streamian | Encountering issues? Please report to Reddit r/movian', 10);
-    page.appendItem(plugin.id + ":details:" + title + ":" + imdbid, "video", {
+    page.appendItem(plugin.id + ":details:" + title + ":" + imdbid + ":" + type, "video", {
         title: "Cancel",
-        icon: Plugin.path + "cancel.png",
+        icon: Plugin.path + "images/cancel.png",
     });
     cancelCurrentOperation();
+    addItemToHistory(title, type, imdbid)
     consultAddons(page, decodeURIComponent(title), imdbid);
 });
 
-new page.Route(plugin.id + ":details:(.*):(.*)", function(page, title, imdbid) {
+new page.Route(plugin.id + ":playchannel:(.*):(.*):(.*)", function(page, link, title, decodedIcon) {
+    setPageHeader(page, "Searching for best source, please wait..");
+    page.model.contents = 'list';
+    icon = decodedIcon;
+    cancelCurrentOperation();
+    console.log("Icon Link:" + icon);
+    addChannelToHistory(page, link, title, icon);
+    page.redirect(link);
+
+});
+
+new page.Route(plugin.id + ":details:(.*):(.*):(.*)", function(page, title, imdbid, type) {
     setPageHeader(page, decodeURIComponent(title));
     page.model.contents = 'list';
     cancelCurrentOperation();
-    page.appendItem(plugin.id + ":play:" + title + ":" + imdbid, "video", {
+
+    page.appendItem(plugin.id + ":play:" + title + ":" + imdbid  + ":" + type, "video", {
         title: "Play",
-        icon: Plugin.path + "play.png",
+        icon: Plugin.path + "images/play.png",
     });
+    page.loading = false;
+});
+
+new page.Route(plugin.id + ":watchhistory", function(page) {
+    setPageHeader(page, "Watch History");
+    page.model.contents = 'grid';
+    cancelCurrentOperation();
+    page.appendItem(plugin.id + ":start", 'video', {
+        icon: Plugin.path + "images/ondemand_off.png",
+    });
+    page.appendItem(plugin.id + ":channels", 'video', {
+        icon: Plugin.path + "images/channels_off.png",
+    });
+    page.appendItem(plugin.id + ":search", 'video', {
+        icon: Plugin.path + "images/search_off.png",
+    });
+    page.appendItem(plugin.id + ":library", 'video', {
+        icon: Plugin.path + "images/library_off.png",
+    });
+    page.appendItem(plugin.id + ":watchhistory", 'video', {
+        icon: Plugin.path + "images/history_on.png",
+    });
+    start.history(page);
     page.loading = false;
 });

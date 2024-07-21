@@ -15,14 +15,14 @@ exports.ondemand = function (page) {
             return [];
         }
     }
+    page.appendItem(plugin.id + ":trendingshows", "video", {
+        icon: Plugin.path + "images/popular_shows.png"
+    });
     var trendingShows = fetchTrending('tv');
     if (trendingShows.length > 0) {
-        page.appendItem("", "separator", { title: "" });
-        page.appendItem('', 'separator', {title: '  Popular Shows                                                                                                                                                                                                                                                               '});
-        page.appendItem("", "separator", { title: "" });
         trendingShows.slice(0, 4).forEach(function(item) { // Limit to 4 items
             var title = item.name;
-            var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "cvrntfnd.png";
+            var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "images/cvrntfnd.png";
             var item = page.appendItem(plugin.id + ":season:" + decodeURIComponent(title), "video", {
                 title: title,
                 icon: posterPath
@@ -67,37 +67,32 @@ exports.ondemand = function (page) {
                 })(title, type));
         });
     }
-    page.appendItem(plugin.id + ":trendingshows", "video", {
-        icon: Plugin.path + "showall.png"
+    page.appendItem(plugin.id + ":trendingmovies", "video", {
+        icon: Plugin.path + "images/popular_movies.png"
     });
-
-    // Fetch and display trending movies
     var trendingMovies = fetchTrending('movie');
     if (trendingMovies.length > 0) {
-        page.appendItem("", "separator", { title: "" });
-        page.appendItem('', 'separator', {title: '  Popular Movies                                                                                                                                                                                                                                                               '});
-        page.appendItem("", "separator", { title: "" });
         trendingMovies.slice(0, 4).forEach(function(item) { // Limit to 4 items
             var title = item.title;
-            var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "cvrntfnd.png";
+            var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : Plugin.path + "images/cvrntfnd.png";
             var releaseDate = item.release_date ? item.release_date.substring(0, 4) : "";
             var movieDetailsUrl = "https://api.themoviedb.org/3/movie/" + item.id + "?api_key=a0d71cffe2d6693d462af9e4f336bc06" + "&append_to_response=external_ids";
             var movieDetailsResponse = http.request(movieDetailsUrl);
             var movieDetails = JSON.parse(movieDetailsResponse);
             var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
+            var type = "movie";
             title = title + " " + releaseDate;
             var movieurl;
             if (service.autoPlay) {
-                movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid;
+                movieurl = plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid + ":" + type;
             } else {
-                movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
+                movieurl = plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid + ":" + type;
             }
             title = item.title + " " + "(" + releaseDate + ")";
             var item = page.appendItem(movieurl, "video", {
                 title: title,
                 icon: posterPath
             });
-            var type = "movie";
             var title = title + " " + releaseDate;
             item.addOptAction('Add \'' + decodeURIComponent(title) + '\' to Your Library', (function(title, type, imdbid) {
                 return function() {
@@ -138,9 +133,6 @@ exports.ondemand = function (page) {
             })(title));
         });
     }
-    page.appendItem(plugin.id + ":trendingmovies", "video", {
-        icon: Plugin.path + "showall.png"
-    });
     page.appendItem("", "separator", { title: "More Coming Soon!" });
 
     
