@@ -151,7 +151,7 @@ exports.library = function (page) {
     var pos = 0;
     for (var i in list) {
       var itemmd = JSON.parse(list[i]);
-      var item = page.appendItem(plugin.id + ":playchannel:" + decodeURIComponent(itemmd.link) + ':' + title + ':' + itemmd.icon, "video", {
+      var item = page.appendItem(plugin.id + ":playchannel:" + decodeURIComponent(itemmd.link) + ':' + title + ':' + decodeURIComponent(itemmd.icon), "video", {
         //title: decodeURIComponent(itemmd.title),
         icon: itemmd.icon ? decodeURIComponent(itemmd.icon) : null,
         description: 'Link: ' + decodeURIComponent(itemmd.link),
