@@ -36,13 +36,38 @@ if (!otalibrary.list) {otalibrary.list = '[]';}
 if (!ondemandhistory.list) {ondemandhistory.list = '[]';}
 if (!channelhistory.list) {channelhistory.list = '[]';}
 service.create(plugin.title, plugin.id + ":start", 'video', true, logo);
+service.searchTime = '5';
 settings.globalSettings(plugin.id, plugin.title, logo, plugin.synopsis);
-settings.createBool('h265filter', 'Enable H.265 Filter (Enable on Playstation 3)', false, function(v) {
+
+settings.createDivider('                Video Settings                                                                                                                                                                                                                                                                                                                                                                                                                              ');
+settings.createDivider('');
+settings.createBool('h265filter', 'Enable H.265 Filter (Playstation 3)', false, function(v) {
     service.H265Filter = v;
 });
 settings.createBool('autoPlay', 'Enable Auto-Play', true, function(v) {
     service.autoPlay = v;
 });
+settings.createMultiOpt('selectQuality', 'Preferred Quality', [
+    ['UltraHD', 'Ultra HD | 4k'],
+    ['FullHD', 'Full HD | 1080p', true],
+    ['HD', 'HD | 720p'],
+    ['SD', 'SD | 480p'],
+  ], function(v) {
+  service.selectQuality = v;
+});
+
+settings.createDivider('                Data Management                                                                                                                                                                                                                                                                                                                                                                                                                              ');
+settings.createDivider('');
+
+settings.createAction('emptyhistory', 'Empty Watch History', function() {
+    channelhistory.list = '[]';
+    ondemandhistory.list = '[]';
+    popup.notify('Watch history has been emptied successfully.', 3);
+});
+
+settings.createDivider('                Regional Settings                                                                                                                                                                                                                                                                                                                                                                                                                              ');
+settings.createDivider('');
+
 settings.createMultiOpt('selectRegion', 'Channel Region (May Be Geo-Restricted)', [
     ['United States', 'United States'],
     ['United Kingdom', 'United Kingdom'],
@@ -64,22 +89,6 @@ settings.createMultiOpt('selectRegion', 'Channel Region (May Be Geo-Restricted)'
     ['Off', 'Off', true],
   ], function(v) {
   service.selectRegion = v;
-});
-settings.createMultiOpt('selectQuality', 'Preferred Quality', [
-    ['UltraHD', 'Ultra HD | 4k'],
-    ['FullHD', 'Full HD | 1080p', true],
-    ['HD', 'HD | 720p'],
-    ['SD', 'SD | 480p'],
-  ], function(v) {
-  service.selectQuality = v;
-});
-settings.createMultiOpt('searchTime', 'Minimum Video Source Search Time', [
-    ['30', '30 Seconds'],
-    ['20', '20 Seconds'],
-    ['10', '10 Seconds'],
-    ['5', '5 Seconds', true],
-  ], function(v) {
-  service.searchTime = v;
 });
 
 
@@ -890,10 +899,10 @@ new page.Route('m3uGroup:(.*):(.*):(.*)', function(page, pl, specifiedGroup, tit
     cancelCurrentOperation();
 
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "images/ondemand_on.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "images/channels_off.png",
+        icon: Plugin.path + "images/channels_on.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "images/search_off.png",
@@ -922,10 +931,10 @@ new page.Route('m3u:(.*):(.*)', function(page, pl, title) {
     cancelCurrentOperation();
 
     page.appendItem(plugin.id + ":start", 'video', {
-        icon: Plugin.path + "images/ondemand_on.png",
+        icon: Plugin.path + "images/ondemand_off.png",
     });
     page.appendItem(plugin.id + ":channels", 'video', {
-        icon: Plugin.path + "images/channels_off.png",
+        icon: Plugin.path + "images/channels_on.png",
     });
     page.appendItem(plugin.id + ":search", 'video', {
         icon: Plugin.path + "images/search_off.png",
