@@ -36,6 +36,7 @@ exports.search = function (page, query) {
                 var title = item.title;
                 var posterPath = item.poster_path ? "https://image.tmdb.org/t/p/w500" + item.poster_path : fallbackImage;
                 var releaseDate = item.release_date ? item.release_date.substring(0, 4) : '';
+                var type = "movie";
                 title = title + " " + releaseDate;
                 
                 // Fetch movie details to get the IMDb ID
@@ -45,7 +46,7 @@ exports.search = function (page, query) {
                 var imdbid = movieDetails.external_ids ? movieDetails.external_ids.imdb_id : '';
                 
                 // Construct URL based on autoplay setting
-                var movieurl = service.autoPlay ? plugin.id + ":play:" + encodeURIComponent(title) + ":" + imdbid : plugin.id + ":details:" + encodeURIComponent(title) + ":" + imdbid;
+                var movieurl = service.autoPlay ? plugin.id + ":play:" + title + ":" + imdbid + ":" + type : plugin.id + ":details:" + title + ":" + imdbid + ":" + type ;
                 
                 // Append movie item to page
                 var movieItem = page.appendItem(movieurl, "video", {
@@ -53,8 +54,6 @@ exports.search = function (page, query) {
                     icon: posterPath
                 });
                 
-                // Add optional actions for movie item
-                var type = "movie";
                 movieItem.addOptAction('Add \'' + title + '\' to Your Library', (function(title, type, imdbid) {
                     return function() {
                         addToLibrary(title, type, imdbid);
