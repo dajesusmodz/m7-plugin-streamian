@@ -1,4 +1,4 @@
-![Logo](/logo.png)
+![Logo](/images/logo.png)
 
 **Screenshot:**
 
